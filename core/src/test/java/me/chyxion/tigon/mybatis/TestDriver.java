@@ -14,8 +14,4 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @ImportResource("classpath*:spring/spring-*.xml")
 @MapperScan(basePackages = "me.chyxion.tigon.mybatis.mapper", annotationClass = Mapper.class)
 public class TestDriver {
-
-    public static void main(String[] args) {
-        SpringApplication.run(TestDriver.class);
-    }
 }

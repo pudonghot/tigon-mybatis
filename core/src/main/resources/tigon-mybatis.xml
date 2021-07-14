@@ -109,6 +109,10 @@
         update <include refid="table" />
         set
         <choose>
+            <when test="_parameter.containsKey(&quot;__col__&quot;)">
+                <bind name="__us_col__" value="@me.chyxion.tigon.mybatis.util.StrUtils@camelToUnderscore(__col__)" />
+                ${__us_col__} = #{__val__}
+            </when>
             <when test="__model__ instanceof java.util.Map">
                 <foreach collection="__model__" index="__col__" item="__val__" separator=", ">
                     <bind name="__us_col__" value="@me.chyxion.tigon.mybatis.util.StrUtils@camelToUnderscore(__col__)" />

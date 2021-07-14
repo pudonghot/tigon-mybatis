@@ -8,6 +8,7 @@ import org.w3c.dom.Document;
 import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.function.Consumer;
 import javax.xml.transform.OutputKeys;
 import org.apache.ibatis.parsing.XNode;
 import javax.xml.transform.dom.DOMSource;
@@ -27,6 +28,7 @@ import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import me.chyxion.tigon.mybatis.xmlgen.contentprovider.*;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.AnnotationUtils;
 import me.chyxion.tigon.mybatis.event.TigonMyBatisReadyEvent;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
@@ -46,10 +48,13 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     @Autowired(required = false)
     private SqlSessionFactory[] sqlSessionFactories;
     /**
-     * After mapper beans initialized
+     * execute #afterPropertiesSet after Mappers initialized
      */
     @Autowired(required = false)
     private SuperMapper<?>[] mappers;
+
+    @Value("${tigon.mybatis.startup-check:true}")
+    private boolean startupCheck;
 
     /**
      * {@inheritDoc}
@@ -77,46 +82,81 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             val argGenXml = new ArgGenXml(
                     new XMLMapperEntityResolver(),
                     config);
+            final boolean[] mapperFound = {false};
 
-            boolean mapperFound = false;
+            eachMapper(config, mapper -> {
+                if (!mapperFound[0]) {
+                    log.info("Register SQL session factory [{}] 'tigon-mybatis.xml'", sqlSessionFactory);
+                    new XMLMapperBuilder(
+                            resourceInputStream(resource),
+                            config,
+                            resource.toString(),
+                            sqlFragments).parse();
 
-            for (val mapper : config.getMapperRegistry().getMappers()) {
-                if (SuperMapper.class.isAssignableFrom(mapper)) {
-                    if (!mapperFound) {
-                        log.info("Register SQL session factory [{}] 'tigon-mybatis.xml'", sqlSessionFactory);
-                        new XMLMapperBuilder(
-                                resourceInputStream(resource),
-                                config,
-                                resource.toString(),
-                                sqlFragments).parse();
+                    log.info("Update SQL session factory [{}] 'MapUnderscoreToCamelCase' to true", sqlSessionFactory);
+                    config.setMapUnderscoreToCamelCase(true);
+                    log.info("Add SQL session factory [{}] JDBC3 key gen interceptor", sqlSessionFactory);
+                    config.addInterceptor(keyGenInterceptor);
+                    mapperFound[0] = true;
+                }
 
-                        log.info("Update SQL session factory [{}] `MapUnderscoreToCamelCase' to true", sqlSessionFactory);
-                        config.setMapUnderscoreToCamelCase(true);
-                        log.info("Add SQL session factory [{}] JDBC3 key gen interceptor", sqlSessionFactory);
-                        config.addInterceptor(keyGenInterceptor);
-                        mapperFound = true;
+                log.info("Generate mapper class [{}].", mapper);
+                argGenXml.setMapperClass(mapper);
+                argGenXml.setMapperXmlEls(getMapperXmlEls(mapper));
+
+                val bytesMapper = genMapperXml(argGenXml);
+
+                if (bytesMapper != null) {
+                    log.debug("Mapper XML [{}] generated.", new String(bytesMapper));
+                    new XMLMapperBuilder(
+                            new ByteArrayInputStream(bytesMapper),
+                            config,
+                            "[Tigon]" + mapper.getName() + ".xml",
+                            sqlFragments).parse();
+                }
+            });
+
+            if (!mapperFound[0]) {
+                continue;
+            }
+
+            // add cache
+            eachMapper(config, mapper -> {
+                val mapperName = mapper.getName();
+                if (config.hasCache(mapperName)) {
+                    val cache = config.getCache(mapperName);
+                    val mapperPrefix = mapperName + ".";
+                    for (val msName : config.getMappedStatementNames()) {
+                        if (msName.startsWith(mapperPrefix)) {
+                            val mappedStatement = config.getMappedStatement(msName);
+                            if (mappedStatement.getCache() == null) {
+                                SystemMetaObject.forObject(mappedStatement)
+                                        .setValue("cache", cache);
+                            }
+                        }
                     }
+                }
+            });
+        }
 
-                    log.info("Generate mapper class [{}].", mapper);
-                    argGenXml.setMapperClass((Class<SuperMapper<?>>) mapper);
-                    argGenXml.setMapperXmlEls(getMapperXmlEls(mapper));
-
-                    val bytesMapper = genMapperXml(argGenXml);
-
-                    if (bytesMapper != null) {
-                        log.debug("Mapper XML [{}] generated.", new String(bytesMapper));
-                        new XMLMapperBuilder(
-                                new ByteArrayInputStream(bytesMapper),
-                                config,
-                                "[Tigon]" + mapper.getName() + ".xml",
-                                sqlFragments).parse();
-                    }
+        if (startupCheck && mappers != null && mappers.length > 0) {
+            log.info("Startup check is on, run database table check.");
+            val search = new Search().limit(1);
+            for (val mapper : mappers) {
+                val mapperInterface = SystemMetaObject.forObject(mapper).getValue("h.mapperInterface");
+                if (mapper instanceof BaseQueryMapper) {
+                    log.info("Mapper [{}] is instance of BaseQueryMapper, run #list to check database table.", mapperInterface);
+                    ((BaseQueryMapper) mapper).list(search);
+                }
+                else {
+                    log.debug("Mapper [{}] is not instance of BaseQueryMapper, ignore.", mapperInterface);
                 }
             }
         }
 
         applicationContext.publishEvent(
             new TigonMyBatisReadyEvent(applicationContext));
+
     }
 
     /**
@@ -186,8 +226,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     }
 
     boolean isIncompleteStatement(
-        final Configuration configuration,
-        final String id) {
+            final Configuration configuration,
+            final String id) {
 
         for (val statementBuilder : configuration.getIncompleteStatements()) {
             val metaObj = SystemMetaObject.forObject(statementBuilder);
@@ -323,10 +363,18 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     @Getter
     @Setter
     @RequiredArgsConstructor
-    private static class ArgGenXml {
+    static class ArgGenXml {
         private final XMLMapperEntityResolver xmlMapperEntityResolver;
         private final Configuration configuration;
         private Class<SuperMapper<?>> mapperClass;
         private List<MapperXmlEl> mapperXmlEls;
+    }
+
+    void eachMapper(final Configuration config, final Consumer<Class<SuperMapper<?>>> consumer) {
+        for (val mapper : config.getMapperRegistry().getMappers()) {
+            if (SuperMapper.class.isAssignableFrom(mapper)) {
+                consumer.accept((Class<SuperMapper<?>>) mapper);
+            }
+        }
     }
 }

@@ -19,4 +19,5 @@ public interface SuperMapper<Enity> {
     String PARAM_SEARCH_KEY = "__search__";
     String PARAM_COL_KEY = "__col__";
     String PARAM_COLS_KEY = "__cols__";
+    String PARAM_VAL_KEY = "__val__";
 }

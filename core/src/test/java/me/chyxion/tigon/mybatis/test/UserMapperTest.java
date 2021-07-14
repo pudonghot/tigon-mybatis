@@ -162,6 +162,11 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
 
         mapper.setNull("remark", new Search().between("id", 6, 8));
 
+        mapper.update("remark", "AA", 6);
+        Assert.state(mapper.find(6).getRemark().equals("AA"), "Test update col failed");
+        mapper.update("remark", "BB", new Search(7));
+        Assert.state(mapper.find(7).getRemark().equals("BB"), "Test update col failed");
+
         final Integer id = mapper.findCol("id", new Search(1));
         Assert.state(Integer.valueOf(1).equals(id), "Test findCol failed");
         final List<Integer> idList = mapper.listCol("id", new Search(1));

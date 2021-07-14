@@ -176,6 +176,26 @@ public class Search implements Serializable {
     }
 
     /**
+     * col is true
+     *
+     * @param col col name
+     * @return this
+     */
+    public Search isTrue(final String col) {
+        return eq(col, Boolean.TRUE);
+    }
+
+    /**
+     * col is false
+     *
+     * @param col col name
+     * @return this
+     */
+    public Search isFalse(final String col) {
+        return eq(col, Boolean.FALSE);
+    }
+
+    /**
      * col in values array
      *
      * @param col col name
