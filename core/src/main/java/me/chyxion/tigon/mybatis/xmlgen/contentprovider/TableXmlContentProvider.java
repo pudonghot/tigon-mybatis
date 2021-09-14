@@ -17,7 +17,8 @@ public class TableXmlContentProvider extends XmlContentProvider {
     @Override
     public Content content(final XmlGenArg arg) {
         val tableName = arg.getTable();
-        log.info("Table content [{}] generated.", tableName);
-        return new Content(tableName);
+        val resolvedTableName = arg.getBeanFactory().resolveEmbeddedValue(tableName);
+        log.info("Table content [{}] generated from [{}].", resolvedTableName, tableName);
+        return new Content(resolvedTableName);
     }
 }

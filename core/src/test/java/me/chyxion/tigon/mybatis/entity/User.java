@@ -17,7 +17,7 @@ import me.chyxion.tigon.mybatis.UseGeneratedKeys;
 @Getter
 @Setter
 @ToString
-@Table("tb_user")
+@Table("${user.table:tb_user}")
 @UseGeneratedKeys
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;

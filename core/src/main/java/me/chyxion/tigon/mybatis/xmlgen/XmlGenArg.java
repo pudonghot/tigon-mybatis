@@ -12,6 +12,7 @@ import me.chyxion.tigon.mybatis.util.AssertUtils;
 import me.chyxion.tigon.mybatis.util.EntityUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 
 /**
  * @author Donghuang
@@ -20,16 +21,18 @@ import org.springframework.core.annotation.AnnotationUtils;
 @Slf4j
 @Getter
 public class XmlGenArg {
+    private final ConfigurableBeanFactory beanFactory;
     private final XPathParser parser;
     private final Document document;
     private final Class<SuperMapper<?>> mapperClass;
     private final Class<?> entityClass;
     private final String table;
 
-    public XmlGenArg(final XPathParser parser,
+    public XmlGenArg(final ConfigurableBeanFactory beanFactory,
+                     final XPathParser parser,
                      final Document document,
                      final Class<SuperMapper<?>> mapperClass) {
-
+        this.beanFactory = beanFactory;
         this.parser = parser;
         this.document = document;
         this.mapperClass = mapperClass;

@@ -6,9 +6,9 @@ import org.w3c.dom.Element;
 import java.io.InputStream;
 import org.w3c.dom.Document;
 import lombok.extern.slf4j.Slf4j;
+import java.util.function.Consumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.function.Consumer;
 import javax.xml.transform.OutputKeys;
 import org.apache.ibatis.parsing.XNode;
 import javax.xml.transform.dom.DOMSource;
@@ -34,6 +34,8 @@ import me.chyxion.tigon.mybatis.event.TigonMyBatisReadyEvent;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import static me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl.Tag;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -81,7 +83,9 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
             val argGenXml = new ArgGenXml(
                     new XMLMapperEntityResolver(),
-                    config);
+                    config,
+                    ((GenericApplicationContext) applicationContext).getBeanFactory());
+
             final boolean[] mapperFound = {false};
 
             eachMapper(config, mapper -> {
@@ -185,7 +189,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
         val configuration = argGenXml.getConfiguration();
         val sqlFragments = configuration.getSqlFragments();
         val namespacePrefix = mapperClass.getName() + ".";
-        val xmlProcessArg = new XmlGenArg(xPathParser, doc, mapperClass);
+        val xmlProcessArg = new XmlGenArg(argGenXml.getBeanFactory(),
+                xPathParser, doc, mapperClass);
         val docEl = doc.getDocumentElement();
 
         boolean updated = false;
@@ -366,6 +371,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     static class ArgGenXml {
         private final XMLMapperEntityResolver xmlMapperEntityResolver;
         private final Configuration configuration;
+        private final ConfigurableBeanFactory beanFactory;
         private Class<SuperMapper<?>> mapperClass;
         private List<MapperXmlEl> mapperXmlEls;
     }
