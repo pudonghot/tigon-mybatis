@@ -16,9 +16,11 @@ import org.springframework.core.io.Resource;
 import org.apache.ibatis.parsing.XPathParser;
 import javax.xml.transform.TransformerFactory;
 import me.chyxion.tigon.mybatis.util.StrUtils;
+import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.ibatis.mapping.SqlCommandType;
 import me.chyxion.tigon.mybatis.util.AssertUtils;
 import me.chyxion.tigon.mybatis.xmlgen.XmlGenArg;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -29,6 +31,7 @@ import org.apache.ibatis.builder.MapperBuilderAssistant;
 import me.chyxion.tigon.mybatis.xmlgen.contentprovider.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import me.chyxion.tigon.mybatis.event.TigonMyBatisReadyEvent;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
@@ -75,7 +78,6 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             () -> "No unique resource [" + path + "] found");
         val resource = resources[0];
         log.info("Tigon namespace XML resource [{}] found.", resource);
-        val keyGenInterceptor = new KeyGenInterceptor();
 
         for (val sqlSessionFactory : sqlSessionFactories) {
             val config = sqlSessionFactory.getConfiguration();
@@ -90,6 +92,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
             eachMapper(config, mapper -> {
                 if (!mapperFound[0]) {
+                    mapperFound[0] = true;
+
                     log.info("Register SQL session factory [{}] 'tigon-mybatis.xml'", sqlSessionFactory);
                     new XMLMapperBuilder(
                             resourceInputStream(resource),
@@ -99,9 +103,6 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
                     log.info("Update SQL session factory [{}] 'MapUnderscoreToCamelCase' to true", sqlSessionFactory);
                     config.setMapUnderscoreToCamelCase(true);
-                    log.info("Add SQL session factory [{}] JDBC3 key gen interceptor", sqlSessionFactory);
-                    config.addInterceptor(keyGenInterceptor);
-                    mapperFound[0] = true;
                 }
 
                 log.info("Generate mapper class [{}].", mapper);
@@ -127,16 +128,28 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             // add cache
             eachMapper(config, mapper -> {
                 val mapperName = mapper.getName();
-                if (config.hasCache(mapperName)) {
-                    val cache = config.getCache(mapperName);
-                    val mapperPrefix = mapperName + ".";
-                    for (val msName : config.getMappedStatementNames()) {
-                        if (msName.startsWith(mapperPrefix)) {
-                            val mappedStatement = config.getMappedStatement(msName);
-                            if (mappedStatement.getCache() == null) {
-                                SystemMetaObject.forObject(mappedStatement)
-                                        .setValue("cache", cache);
+                val mapperPrefix = mapperName + ".";
+                for (val msName : config.getMappedStatementNames()) {
+                    if (msName.startsWith(mapperPrefix)) {
+                        val mappedStatement = config.getMappedStatement(msName);
+                        MetaObject msmo = null;
+
+                        // add cache
+                        if (config.hasCache(mapperName) && mappedStatement.getCache() == null) {
+                            (msmo = SystemMetaObject.forObject(mappedStatement))
+                                    .setValue("cache", config.getCache(mapperName));
+                        }
+
+                        // JDBC3 Key Gen, For multiple keys generate
+                        val keygen = mappedStatement.getKeyGenerator();
+                        if (mappedStatement.getSqlCommandType() == SqlCommandType.INSERT &&
+                                msName.equals(mapperPrefix + "insert") &&
+                                keygen instanceof Jdbc3KeyGenerator) {
+                            log.info("Replace JDBC3 key generator.");
+                            if (msmo == null) {
+                                msmo = SystemMetaObject.forObject(mappedStatement);
                             }
+                            msmo.setValue(Jdbc3KeyGen.MS_KEY_GEN_FIELD, Jdbc3KeyGen.OBJECT);
                         }
                     }
                 }

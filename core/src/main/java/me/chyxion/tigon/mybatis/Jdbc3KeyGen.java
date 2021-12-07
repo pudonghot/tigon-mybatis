@@ -17,8 +17,6 @@ import org.apache.ibatis.mapping.MappedStatement;
 import me.chyxion.tigon.mybatis.util.EntityUtils;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.apache.ibatis.executor.ExecutorException;
-import org.apache.ibatis.reflection.SystemMetaObject;
-import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 
 /**
@@ -28,8 +26,8 @@ import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
  * @date 2017/1/9 14:46
  */
 @Slf4j
-class Jdbc3KeyGen implements KeyGenerator {
-    static final Jdbc3KeyGen INSTANCE = new Jdbc3KeyGen();
+class Jdbc3KeyGen extends Jdbc3KeyGenerator {
+    static final Jdbc3KeyGen OBJECT = new Jdbc3KeyGen();
     static final String MS_KEY_GEN_FIELD = "keyGenerator";
 
     /**
@@ -52,9 +50,14 @@ class Jdbc3KeyGen implements KeyGenerator {
         final Statement stmt,
         final Object params) {
 
+        val models = getModels(params);
+        if (models.isEmpty()) {
+            log.info("No models found in params, use default Jdbc3KeyGenerator#processAfter");
+            super.processAfter(executor, ms, stmt, params);
+            return;
+        }
+
         try (val rs = stmt.getGeneratedKeys()) {
-            val configuration = ms.getConfiguration();
-            val typeHandlerRegistry = configuration.getTypeHandlerRegistry();
             var keyProps = ms.getKeyProperties();
 
             if (keyProps == null || keyProps.length == 0) {
@@ -63,32 +66,31 @@ class Jdbc3KeyGen implements KeyGenerator {
 
             val rsmd = rs.getMetaData();
             if (rsmd.getColumnCount() >= keyProps.length) {
-                TypeHandler<?>[] typeHandlers = null;
-                for (val model : getModels(params)) {
+                val config = ms.getConfiguration();
+                val typeHandlerRegistry = config.getTypeHandlerRegistry();
+
+                for (val model : models) {
                     log.debug("Process model [{}] key.", model);
                     // there should be one row for each statement (also one for each params)
                     if (rs.next()) {
-                        val metaModel = configuration.newMetaObject(model);
-                        if (typeHandlers == null) {
-                            typeHandlers = getTypeHandlers(typeHandlerRegistry, metaModel, keyProps, rsmd);
-                        }
-                        populateKeys(rs, metaModel, keyProps, typeHandlers);
+                        val metaModel = config.newMetaObject(model);
+                        populateKeys(rs, metaModel, keyProps,
+                            getTypeHandlers(typeHandlerRegistry, metaModel, keyProps, rsmd));
                         log.debug("Populate model [{}] key result.", model);
                     }
                     else {
+                        log.debug("Key result set end.");
                         break;
                     }
                 }
+            }
+            else {
+                log.warn("Generated keys' meta data columns' size less than keys, ignore.");
             }
         }
         catch (Exception e) {
             throw new ExecutorException(
                 "Error getting generated key or setting result to params object", e);
-        }
-        finally {
-            // set back original key generator
-            SystemMetaObject.forObject(ms).setValue(
-                MS_KEY_GEN_FIELD, Jdbc3KeyGenerator.INSTANCE);
         }
     }
 
@@ -103,12 +105,13 @@ class Jdbc3KeyGen implements KeyGenerator {
 
             if (mapParams.containsKey(SuperMapper.PARAM_MODELS_KEY)) {
                 val objModels = mapParams.get(SuperMapper.PARAM_MODELS_KEY);
-                if (objModels.getClass().isArray()) {
-                    return Arrays.asList((Object[]) objModels);
-                }
 
                 if (objModels instanceof Collection) {
                     return (Collection<Object>) objModels;
+                }
+
+                if (objModels.getClass().isArray()) {
+                    return Arrays.asList((Object[]) objModels);
                 }
             }
         }
@@ -119,16 +122,17 @@ class Jdbc3KeyGen implements KeyGenerator {
     private TypeHandler<?>[] getTypeHandlers(
         final TypeHandlerRegistry typeHandlerRegistry,
         final MetaObject metaParam,
-        final String[] keyProperties,
+        final String[] keyProps,
         final ResultSetMetaData rsmd) throws SQLException {
 
-        val typeHandlers = new TypeHandler<?>[keyProperties.length];
+        val typeHandlers = new TypeHandler<?>[keyProps.length];
 
-        for (int i = 0; i < keyProperties.length; ++i) {
-            if (metaParam.hasSetter(keyProperties[i])) {
+        int i = 0;
+        for (val keyProp : keyProps) {
+            if (metaParam.hasSetter(keyProp)) {
                 typeHandlers[i] = typeHandlerRegistry.getTypeHandler(
-                    metaParam.getSetterType(keyProperties[i]),
-                    JdbcType.forCode(rsmd.getColumnType(i + 1)));
+                        metaParam.getSetterType(keyProp),
+                        JdbcType.forCode(rsmd.getColumnType(++i)));
             }
         }
 
@@ -138,13 +142,14 @@ class Jdbc3KeyGen implements KeyGenerator {
     private void populateKeys(
         final ResultSet rs,
         final MetaObject metaParam,
-        final String[] keyProperties,
+        final String[] keyProps,
         final TypeHandler<?>[] typeHandlers) throws SQLException {
 
-        for (int i = 0; i < keyProperties.length; ++i) {
+        int i = 0;
+        for (val keyProp : keyProps) {
             val th = typeHandlers[i];
             if (th != null) {
-                metaParam.setValue(keyProperties[i], th.getResult(rs, i + 1));
+                metaParam.setValue(keyProp, th.getResult(rs, ++i));
             }
         }
     }

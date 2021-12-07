@@ -1,6 +1,4 @@
 # common config
-server:
-  port: 8080
-
 mybatis:
-  mapperLocations: classpath*:me/chyxion/tigon/mybatis/mapper/*Mapper.xml
+  mapper-locations: classpath*:me/chyxion/tigon/mybatis/mapper/*Mapper.xml
+  executor-type: REUSE
