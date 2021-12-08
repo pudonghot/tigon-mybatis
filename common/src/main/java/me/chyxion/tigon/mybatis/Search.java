@@ -350,7 +350,7 @@ public class Search implements Serializable {
     public Search between(final String col, final Object bottom, final Object top) {
         criteria.add(new Criterion(
             BETWEEN,
-            col, 
+            col,
             Arrays.asList(bottom, top)));
         return this;
     }
