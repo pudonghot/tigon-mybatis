@@ -2,9 +2,9 @@
 
 ## 简介
 
-Tigon MyBatis为Spring工程中MyBatis的Mapper提供增强，主要有以下特点
+Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以下特点
 
-- 代码又少又壮，绝不做多余的事情
+- 代码又少又壮(1885行)，绝不做多余的事情
 - 仅需Mapper继承接口，实现`增` `删` `改` `查`，无额外配置，爽到没女朋友
 - 用完即走，毫不留恋
 
@@ -22,7 +22,7 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供增强，主要有以下特
 
 ### 使用示例
 
-下面是使用示例，可以在源代码中找到更详细的单元测试。**Talk is cheep，read the fine source code.**
+下面是使用示例，可以在源代码中找到更详细的[单元测试用例](core/src/test/java/me/chyxion/tigon/mybatis/test/UserMapperTest.java)
 
 ##### 定义Entity
 
@@ -101,14 +101,7 @@ private UserMapper mapper;
 val user = new User();
 user.setName("Donghuang");
 user.setAccount("donghuang");
-user.setMobile("137647788xx");
-user.setPassword(RandomStringUtils.randomAlphanumeric(16));
-user.setGender(User.Gender.MALE);
-user.setBirthDate(DateUtils.parseDate("1994-04-04"));
-user.setCity("Shanghai");
-user.setActive(true);
-user.setRemark("Uncle Donghuang");
-user.setCreatedBy("donghuang");
+...
 user.setCreatedAt(new Date());
 
 // 插入单条记录
@@ -117,26 +110,13 @@ mapper.insert(user);
 val user1 = new User();
 user1.setName("Gemily");
 user1.setAccount("gemily");
-user1.setMobile("15770780xxx");
-user1.setPassword(RandomStringUtils.randomAlphanumeric(16));
-user1.setGender(User.Gender.FEMALE);
-user1.setBirthDate(DateUtils.parseDate("1990-06-06"));
-user1.setCity("Hangzhou");
-user1.setActive(true);
-user1.setCreatedBy("donghuang");
+...
 user1.setCreatedAt(new Date());
 
 val user2 = new User();
 user2.setName("Luffy");
 user2.setAccount("luffy");
-user2.setMobile("137647799xx");
-user2.setPassword(RandomStringUtils.randomAlphanumeric(16));
-user2.setGender(User.Gender.MALE);
-user2.setBirthDate(DateUtils.parseDate("1997-07-07"));
-user2.setCity("East sea");
-user2.setActive(true);
-user2.setRemark("Luffy");
-user2.setCreatedBy("donghuang");
+...
 user2.setCreatedAt(new Date());
 
 // 批量插入记录
@@ -276,6 +256,10 @@ mapper.delete(new Search("id", 1));
 ### 原理
 
 Tigon MyBatis并**不改变**MyBatis相关功能，所做的只是在程序**启动期间**检测业务Mapper接口，如果继承了相关`BaseMapper.java`，则注入相关方法`MappedStatement`，具体逻辑参见源码，超简单，超幼稚。
+
+### 代码阅读
+
+都看到这里了，动动小手clone工程，直接打开[UserMapperTest.java](core/src/test/java/me/chyxion/tigon/mybatis/test/UserMapperTest.java)右击调试运行，心事全都被你发现，代码写得烂的地方回来喷我，一定改。
 
 ### 其他
 
