@@ -5,50 +5,23 @@
         http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>me.chyxion.tigon</groupId>
     <artifactId>tigon-mybatis-common</artifactId>
-    <version>0.0.8</version>
-    <packaging>jar</packaging>
+    <version>${revision}</version>
+
     <name>Tigon MyBatis Common</name>
     <description>Tigon MyBatis Common</description>
 
-    <properties>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
-    </properties>
-
-    <url>https://gitee.com/chyxion/tigon-mybatis</url>
-
-    <licenses>
-        <license>
-            <name>The MIT License (MIT)</name>
-            <url>http://mit-license.org</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>chyxion</id>
-            <name>Shaun Chyxion</name>
-            <email>chyxion@163.com</email>
-            <url>http://chyxion.github.io</url>
-            <timezone>+8</timezone>
-        </developer>
-    </developers>
-
-    <scm>
-        <url>https://gitee.com/chyxion/tigon-mybatis</url>
-        <connection>scm:git:https://gitee.com/chyxion/tigon-mybatis.git</connection>
-        <developerConnection>scm:git:git@gitee.com:chyxion/tigon-mybatis.git</developerConnection>
-    </scm>
+    <parent>
+        <groupId>me.chyxion.tigon</groupId>
+        <artifactId>tigon-mybatis-proj</artifactId>
+        <version>${revision}</version>
+    </parent>
 
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
         <!-- Test -->
@@ -65,26 +38,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Built-By>Shaun Chyxion</Built-By>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

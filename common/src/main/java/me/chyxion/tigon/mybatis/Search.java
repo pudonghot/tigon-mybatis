@@ -27,7 +27,7 @@ public class Search implements Serializable {
     private String table;
     private Integer offset;
     private Integer limit;
-    private final Map<String, String> orders = new LinkedHashMap<>();
+    private final Map<String, Object> orders = new LinkedHashMap<>();
     private final Map<String, Object> attrs = new HashMap<>();
     private static final Map<Criterion.Type, Consumer<ProcArg>> PROCESSORS;
 
@@ -68,6 +68,45 @@ public class Search implements Serializable {
         PROCESSORS.put(OR, arg -> arg.addSubsearch());
         PROCESSORS.put(BUILDER, arg ->
             ((Consumer<ProcArg>) arg.getCriterion().getAttr()).accept(arg));
+    }
+
+    /**
+     * construct by eq
+     *
+     * @param value id value
+     */
+    public static Search of(final Object value) {
+        return new Search(value);
+    }
+
+    /**
+     * construct by eq
+     *
+     * @param col col name
+     * @param value value
+     */
+    public static Search of(final String col, final Object value) {
+        return new Search(col, value);
+    }
+
+    /**
+     * construct by in
+     *
+     * @param col col name
+     * @param values in values
+     */
+    public static Search of(final String col, final Collection<?> values) {
+        return new Search(col, values);
+    }
+
+    /**
+     * construct by in
+     *
+     * @param col col name
+     * @param values in values
+     */
+    public static Search of(final String col, final Object[] values) {
+        return new Search(col, values);
     }
 
     /**
@@ -561,6 +600,18 @@ public class Search implements Serializable {
     }
 
     /**
+     * order by fields
+     *
+     * @param col col name
+     * @param values values
+     * @return this
+     */
+    public Search orderBy(final String col, final Collection<?> values) {
+        orders.put(ProcArg.col(table, col), values);
+        return this;
+    }
+
+    /**
      * set offset
      *
      * @param offset offset
@@ -603,8 +654,8 @@ public class Search implements Serializable {
     /**
      * @return orders
      */
-    public Map<String, String> orders() {
-        val ordersRtn = new LinkedHashMap<String, String>(orders.size());
+    public Map<String, Object> orders() {
+        val ordersRtn = new LinkedHashMap<String, Object>(orders.size());
         val hasTable = StrUtils.isNotBlank(table);
 
         for (val order : orders.entrySet()) {

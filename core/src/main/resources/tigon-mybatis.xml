@@ -45,7 +45,18 @@
             order by
             <foreach collection="__search__.orders()" index="__col__"
                      item="__direction__" separator=", ">
-                ${__col__} ${__direction__}
+                <choose>
+                    <when test="__direction__ instanceof java.util.Collection">
+                        field(${__col__},
+                        <foreach collection="__direction__" item="__val__" separator=", ">
+                            #{__val__}
+                        </foreach>
+                        )
+                    </when>
+                    <otherwise>
+                        ${__col__} ${__direction__}
+                    </otherwise>
+                </choose>
             </foreach>
         </if>
     </sql>

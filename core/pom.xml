@@ -5,10 +5,9 @@
         http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>me.chyxion.tigon</groupId>
     <artifactId>tigon-mybatis</artifactId>
-    <version>0.0.8</version>
-    <packaging>jar</packaging>
+    <version>${revision}</version>
+
     <name>Tigon MyBatis Core</name>
     <description>Tigon MyBatis Core</description>
 
@@ -22,30 +21,11 @@
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
     </properties>
 
-    <url>https://gitee.com/chyxion/tigon-mybatis</url>
-
-    <licenses>
-        <license>
-            <name>The MIT License (MIT)</name>
-            <url>http://mit-license.org</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>chyxion</id>
-            <name>Shaun Chyxion</name>
-            <email>chyxion@163.com</email>
-            <url>http://chyxion.github.io</url>
-            <timezone>+8</timezone>
-        </developer>
-    </developers>
-
-    <scm>
-        <url>https://gitee.com/chyxion/tigon-mybatis</url>
-        <connection>scm:git:https://gitee.com/chyxion/tigon-mybatis.git</connection>
-        <developerConnection>scm:git:git@gitee.com:chyxion/tigon-mybatis.git</developerConnection>
-    </scm>
+    <parent>
+        <groupId>me.chyxion.tigon</groupId>
+        <artifactId>tigon-mybatis-proj</artifactId>
+        <version>${revision}</version>
+    </parent>
 
     <dependencies>
         <dependency>
@@ -55,7 +35,7 @@
         <dependency>
             <groupId>me.chyxion.tigon</groupId>
             <artifactId>tigon-mybatis-common</artifactId>
-            <version>0.0.8</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
@@ -162,24 +142,5 @@
                 <directory>src/test/resources</directory>
             </testResource>
         </testResources>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Built-By>Shaun Chyxion</Built-By>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 </project>

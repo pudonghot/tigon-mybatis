@@ -4,6 +4,7 @@ import lombok.val;
 import java.util.Objects;
 import java.util.Iterator;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * @author Donghuang
@@ -11,6 +12,7 @@ import java.util.function.Function;
  */
 public class StrUtils {
     public static final String EMPTY = "";
+    private static Pattern PATTERN_UNDERSCORE = Pattern.compile("_([a-zA-Z])");
     private static final int STRING_BUILDER_SIZE = 256;
 
     /**
@@ -49,6 +51,22 @@ public class StrUtils {
      */
     public static String camelToUnderscore(final String str) {
         return join(splitCamel(str), "_").toLowerCase();
+    }
+
+    /**
+     * foo_bar -> fooBar
+     *
+     * @param str foo_bar
+     * @return FooBar
+     */
+    public static String underscoreToCamel(final String str) {
+        val m = PATTERN_UNDERSCORE.matcher(str);
+        val sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, m.group(1).toUpperCase());
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     public static boolean isBlank(final CharSequence cs) {
