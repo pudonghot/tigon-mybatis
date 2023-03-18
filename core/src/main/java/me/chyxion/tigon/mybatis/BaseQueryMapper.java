@@ -108,11 +108,22 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
      * @param scanner scanner
      */
     default void scan(final int pageSize, final Search search, final Consumer<Entity> scanner) {
+        batchScan(pageSize, search, list -> list.forEach(scanner::accept));
+    }
+
+    /**
+     * scan entities
+     *
+     * @param pageSize page size
+     * @param search search
+     * @param scanner scanner
+     */
+    default void batchScan(final int pageSize, final Search search, final Consumer<List<Entity>> scanner) {
         val total = count(search);
 
         if (total > 0) {
             for (int start = 0; start < total; start += pageSize) {
-                list(search.offset(start).limit(Math.min(pageSize, total - start))).forEach(scanner::accept);
+                scanner.accept(list(search.offset(start).limit(Math.min(pageSize, total - start))));
             }
         }
     }
