@@ -2,3 +2,7 @@
 mybatis:
   mapper-locations: classpath*:me/chyxion/tigon/mybatis/mapper/*Mapper.xml
   executor-type: REUSE
+
+tigon:
+  mybatis:
+    quotation-mark: "`"

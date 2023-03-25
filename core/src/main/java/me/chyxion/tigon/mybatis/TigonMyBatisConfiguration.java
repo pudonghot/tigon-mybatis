@@ -30,7 +30,6 @@ import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import me.chyxion.tigon.mybatis.xmlgen.contentprovider.*;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import me.chyxion.tigon.mybatis.event.TigonMyBatisReadyEvent;
@@ -41,12 +40,14 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import static me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl.Tag;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
  * @author Donghuang
  * @date Jul 12, 2014 3:36:13 PM
  */
 @Slf4j
+@EnableConfigurationProperties({ TigonMyBatisProperties.class })
 public class TigonMyBatisConfiguration implements InitializingBean {
     @Autowired
     private ApplicationContext applicationContext;
@@ -57,15 +58,15 @@ public class TigonMyBatisConfiguration implements InitializingBean {
      */
     @Autowired(required = false)
     private SuperMapper<?>[] mappers;
-
-    @Value("${tigon.mybatis.startup-check:true}")
-    private boolean startupCheck;
+    @Autowired
+    private TigonMyBatisProperties properties;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void afterPropertiesSet() {
+
         if (sqlSessionFactories == null || sqlSessionFactories.length == 0) {
             log.warn("No 'org.apache.ibatis.session.SqlSessionFactory' bean found, Tigon MyBatis ignored.");
             return;
@@ -156,7 +157,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             });
         }
 
-        if (startupCheck && mappers != null && mappers.length > 0) {
+        if (properties.isStartupCheck() && mappers != null && mappers.length > 0) {
             log.info("Startup check is on, run database table check.");
             val search = new Search().limit(1);
             for (val mapper : mappers) {

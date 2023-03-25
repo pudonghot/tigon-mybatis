@@ -16,6 +16,6 @@ public class PrimaryKeyXmlContentProvider extends XmlContentProvider {
      */
     @Override
     public Content content(final XmlGenArg arg) {
-        return new Content(EntityUtils.primaryKeyName(arg.getEntityClass()));
+        return wrapQuotationMark(arg, EntityUtils.primaryKeyName(arg.getEntityClass()));
     }
 }

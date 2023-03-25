@@ -9,7 +9,6 @@ import me.chyxion.tigon.mybatis.SuperMapper;
 import org.apache.ibatis.parsing.XPathParser;
 import me.chyxion.tigon.mybatis.util.StrUtils;
 import me.chyxion.tigon.mybatis.util.AssertUtils;
-import me.chyxion.tigon.mybatis.util.EntityUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -76,12 +75,4 @@ public class XmlGenArg {
         return table;
     }
 
-    /**
-     * entity cols
-     *
-     * @return cols
-     */
-    public String cols() {
-        return StrUtils.join(EntityUtils.cols(entityClass), ", ");
-    }
 }
