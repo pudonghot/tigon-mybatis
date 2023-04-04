@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.stream.Stream;
 import me.chyxion.tigon.mybatis.util.StrUtils;
+import me.chyxion.tigon.mybatis.util.EntityUtils;
 
 /**
  * Search process argument, may use in Search#build
@@ -112,7 +113,7 @@ public class ProcArg implements Serializable {
      * @return this
      */
     ProcArg addSubsearch() {
-        final Search search = criterion.getAttr();
+        val search = (Search) criterion.getAttr();
         if (StrUtils.isBlank(search.table())) {
             search.table(table);
         }
@@ -139,10 +140,7 @@ public class ProcArg implements Serializable {
         return criterion.getValue();
     }
 
-    static String col(final String table, final String col0) {
-        val col = StrUtils.camelToUnderscore(col0);
-        return StrUtils.isNotBlank(table) &&
-                !col.contains(".") ?
-                table + "." + col : col;
+    static String col(final String table, final String col) {
+        return EntityUtils.quotationWrap(table, col);
     }
 }

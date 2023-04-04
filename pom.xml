@@ -48,7 +48,6 @@
     </scm>
 
     <modules>
-        <module>common</module>
         <module>core</module>
     </modules>
 

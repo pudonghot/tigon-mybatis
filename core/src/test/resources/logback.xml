@@ -31,6 +31,5 @@
 
     <root level="${log.level}">
         <appender-ref ref="Console" />
-        <appender-ref ref="File" />
     </root>
 </configuration>

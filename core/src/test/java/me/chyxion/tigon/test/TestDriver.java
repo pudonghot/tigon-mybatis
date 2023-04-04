@@ -1,5 +1,8 @@
 package me.chyxion.tigon.test;
 
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +19,7 @@ public class TestDriver {
     @Test
     public void runSearch() {
         Search search = new Search(1).eq("name", 2).or("gender", "F").or("gender", "M");
-        log.info(StrUtils.join(search.assemble(), ""));
+        log.info(StringUtils.join(search.assemble(), ""));
         search = new Search().or(
                 new Search().or("Bar", "Foo")
                         .eq("foo", "bar")
@@ -29,7 +32,7 @@ public class TestDriver {
                         .or("Or0", "OrValue")
                         .or("Or2", "OrValue2")
             ).eq("name", 2).isNull("gaga");
-        log.info(StrUtils.join(search.assemble(), ""));
+        log.info(StringUtils.join(search.assemble(), ""));
     }
 
     @Test
@@ -38,5 +41,17 @@ public class TestDriver {
         System.err.println(Arrays.asList((Object[]) array));
         new Search().in("foo", new String[]{});
         log.info("AAA");
+    }
+
+    @Test
+    public void testWrap() {
+        val quoMark = "`";
+        val regexp = "(?<!`)[^.`]+(?!`)";
+
+        Assert.assertTrue("a".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`a`"));
+        Assert.assertTrue("ab".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`"));
+        Assert.assertTrue("ab.ac".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`.`ac`"));
+        Assert.assertTrue("ab-ac.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
+        Assert.assertTrue("`ab-ac`.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
     }
 }

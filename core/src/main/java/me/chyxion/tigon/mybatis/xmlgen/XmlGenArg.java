@@ -2,6 +2,7 @@ package me.chyxion.tigon.mybatis.xmlgen;
 
 import lombok.val;
 import lombok.Getter;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import lombok.extern.slf4j.Slf4j;
 import me.chyxion.tigon.mybatis.Table;
@@ -74,5 +75,4 @@ public class XmlGenArg {
         log.info("Get table name [{}] from entity class name [{}]", table, modelName);
         return table;
     }
-
 }

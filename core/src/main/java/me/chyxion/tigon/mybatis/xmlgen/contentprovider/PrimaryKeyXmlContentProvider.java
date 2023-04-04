@@ -1,6 +1,7 @@
 package me.chyxion.tigon.mybatis.xmlgen.contentprovider;
 
 import lombok.extern.slf4j.Slf4j;
+import me.chyxion.tigon.mybatis.util.StrUtils;
 import me.chyxion.tigon.mybatis.util.EntityUtils;
 import me.chyxion.tigon.mybatis.xmlgen.XmlGenArg;
 
@@ -16,6 +17,6 @@ public class PrimaryKeyXmlContentProvider extends XmlContentProvider {
      */
     @Override
     public Content content(final XmlGenArg arg) {
-        return wrapQuotationMark(arg, EntityUtils.primaryKeyName(arg.getEntityClass()));
+        return new Content(EntityUtils.primaryKeyCol(arg.getEntityClass()));
     }
 }

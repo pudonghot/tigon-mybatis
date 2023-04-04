@@ -11,8 +11,8 @@ import me.chyxion.tigon.mybatis.Search;
 import org.springframework.util.Assert;
 import me.chyxion.tigon.mybatis.TestDriver;
 import me.chyxion.tigon.mybatis.entity.User;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import me.chyxion.tigon.mybatis.util.StrUtils;
 import me.chyxion.tigon.mybatis.mapper.UserMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,7 +69,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
         mapper.insert(userList);
 
         val user = new User();
-        user.setName(StrUtils.capitalize(donghuang));
+        user.setName(StringUtils.capitalize(donghuang));
         user.setAccount(donghuang);
         user.setMobile("1376" + RandomStringUtils.randomNumeric(7));
         user.setPassword(RandomStringUtils.randomAlphanumeric(16));
@@ -169,7 +169,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
 
         final Integer id = mapper.findCol("id", new Search(1));
         Assert.state(Integer.valueOf(1).equals(id), "Test findCol failed");
-        final List<Integer> idList = mapper.listCol("id", new Search(1));
+        final List<Integer> idList = mapper.listCol("`tb_user`.id", new Search(1));
         Assert.state(Integer.valueOf(1).equals(idList.get(0)), "Test listCol failed");
 
         val userList13 = mapper.list(new Search().build(

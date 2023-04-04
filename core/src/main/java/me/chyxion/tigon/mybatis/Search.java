@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import me.chyxion.tigon.mybatis.util.StrUtils;
+import org.springframework.util.StringUtils;
+
 import static me.chyxion.tigon.mybatis.Criterion.Type.*;
 
 /**

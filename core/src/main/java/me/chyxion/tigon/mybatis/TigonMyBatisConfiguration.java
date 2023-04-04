@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.function.Consumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.stream.Collectors;
 import javax.xml.transform.OutputKeys;
 import org.apache.ibatis.parsing.XNode;
 import javax.xml.transform.dom.DOMSource;
@@ -58,14 +59,26 @@ public class TigonMyBatisConfiguration implements InitializingBean {
      */
     @Autowired(required = false)
     private SuperMapper<?>[] mappers;
+    @Getter
     @Autowired
     private TigonMyBatisProperties properties;
+    private static TigonMyBatisConfiguration STATIC_INSTANCE;
+
+    /**
+     * get config static instance
+     *
+     * @return config
+     */
+    public static TigonMyBatisConfiguration getStaticInstance() {
+        return STATIC_INSTANCE;
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void afterPropertiesSet() {
+        STATIC_INSTANCE = this;
 
         if (sqlSessionFactories == null || sqlSessionFactories.length == 0) {
             log.warn("No 'org.apache.ibatis.session.SqlSessionFactory' bean found, Tigon MyBatis ignored.");
@@ -351,7 +364,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
                 el.setAttribute("useGeneratedKeys", "true");
                 val keyProps = ugkAnnotation.value();
                 if (keyProps != null && keyProps.length > 0) {
-                    el.setAttribute("keyProperty", StrUtils.join(keyProps, ","));
+                    el.setAttribute("keyProperty", Arrays.stream(keyProps).collect(Collectors.joining(",")));
                 }
             }
         }

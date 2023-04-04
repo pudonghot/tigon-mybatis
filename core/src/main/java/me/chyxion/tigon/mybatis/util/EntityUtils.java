@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Modifier;
 import me.chyxion.tigon.mybatis.*;
 import java.util.stream.Collectors;
+import org.springframework.util.StringUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -20,44 +21,48 @@ public final class EntityUtils {
     public static final String ID = "id";
 
     /**
-     * get primary key name
-     * called from tigon-mybatis.xml
+     * db col, wrap with quotationMark
+     *
+     * @param table table
+     * @param col col
+     * @return col
+     */
+    public static String quotationWrap(final String table, final String col) {
+        val underscoreCol = StrUtils.camelToUnderscore(col);
+
+        val concatenateCol = StrUtils.isNotBlank(table) &&
+                !underscoreCol.contains(".") ?
+                table + "." + underscoreCol : underscoreCol;
+
+        val quotationMark = TigonMyBatisConfiguration.getStaticInstance()
+                .getProperties().getQuotationMark();
+
+        if (StrUtils.isBlank(quotationMark)) {
+            return concatenateCol;
+        }
+        return Arrays.stream(concatenateCol.split("\\."))
+                .map(c -> c.contains(quotationMark) ? c : quotationMark + c + quotationMark)
+                .collect(Collectors.joining("."));
+    }
+
+    /**
+     * db col, wrap with quotationMark
+     *
+     * @param col col
+     * @return wrapped col
+     */
+    public static String quotationWrap(final String col) {
+        return quotationWrap(null, col);
+    }
+
+    /**
+     * primary key col
      *
      * @param clazz entity class
-     * @return primary key name
+     * @return primary key col
      */
-    public static String primaryKeyName(final Class<?> clazz) {
-
-        if (AnnotationUtils.findAnnotation(clazz, NoPrimaryKey.class) != null) {
-            return "!!!NO_PRIMARY_KEY!!!";
-        }
-
-        val fields = new ArrayList<Field>(4);
-
-        ReflectionUtils.doWithFields(clazz, fields::add,
-            field -> isNormal(field) &&
-                    (field.isAnnotationPresent(PrimaryKey.class) ||
-                        ID.equalsIgnoreCase(field.getName())));
-
-        AssertUtils.state(!fields.isEmpty(),
-            () -> "No primary key found of entity class [" + clazz + "]");
-        if (fields.size() == 1) {
-            return fields.iterator().next().getName();
-        }
-
-        val annoPk = fields.stream()
-                .filter(field -> field.isAnnotationPresent(PrimaryKey.class))
-                .collect(Collectors.toList());
-
-        AssertUtils.state(annoPk.size() < 2,
-            () -> "Multiple @PrimaryKey found in entity class [" + clazz + "]");
-
-        if (annoPk.size() == 1) {
-            return annoPk.iterator().next().getName();
-        }
-
-        throw new IllegalStateException(
-            "Could no decide primary key of entity class [" + clazz + "]");
+    public static String primaryKeyCol(final Class<?> clazz) {
+        return quotationWrap(primaryKeyField(clazz));
     }
 
     /**
@@ -75,7 +80,7 @@ public final class EntityUtils {
         }
 
         val field = ReflectionUtils.findField(
-                entityClass, primaryKeyName(entityClass));
+                entityClass, primaryKeyField(entityClass));
         field.setAccessible(true);
         return ReflectionUtils.getField(field, entity);
     }
@@ -102,15 +107,16 @@ public final class EntityUtils {
 
     /**
      * return entity cols
+     *
      * @param clazz entity class
      * @return entity cols
      */
-    public static List<String> cols(final Class<?> clazz) {
+    public static String cols(final Class<?> clazz) {
         val cols = new ArrayList<String>(16);
         ReflectionUtils.doWithFields(clazz,
-            field -> cols.add(StrUtils.camelToUnderscore(field.getName())),
+            field -> cols.add(field.getName()),
             EntityUtils::isNormal);
-        return cols;
+        return cols.stream().map(EntityUtils::quotationWrap).collect(Collectors.joining(", "));
     }
 
     static Map<String, SqlParam> toMap(final Object entity, final boolean forUpdate) {
@@ -132,13 +138,53 @@ public final class EntityUtils {
                 }
             }
 
-            mapRtn.put(StrUtils.camelToUnderscore(field.getName()),
+            mapRtn.put(field.getName(),
                 new SqlParam(rawValue,
                     value != null ?
                     value : ReflectionUtils.getField(field, entity)));
         }, fieldFilter(entity, forUpdate));
 
         return mapRtn;
+    }
+
+    /**
+     * get primary key field
+     *
+     * @param clazz entity class
+     * @return primary key field name
+     */
+    static String primaryKeyField(final Class<?> clazz) {
+
+        if (AnnotationUtils.findAnnotation(clazz, NoPrimaryKey.class) != null) {
+            return "!!!NO_PRIMARY_KEY!!!";
+        }
+
+        val fields = new ArrayList<Field>(4);
+
+        ReflectionUtils.doWithFields(clazz, fields::add,
+                field -> isNormal(field) &&
+                        (field.isAnnotationPresent(PrimaryKey.class) ||
+                                ID.equalsIgnoreCase(field.getName())));
+
+        AssertUtils.state(!fields.isEmpty(),
+                () -> "No primary key found of entity class [" + clazz + "]");
+        if (fields.size() == 1) {
+            return fields.iterator().next().getName();
+        }
+
+        val annoPk = fields.stream()
+                .filter(field -> field.isAnnotationPresent(PrimaryKey.class))
+                .collect(Collectors.toList());
+
+        AssertUtils.state(annoPk.size() < 2,
+                () -> "Multiple @PrimaryKey found in entity class [" + clazz + "]");
+
+        if (annoPk.size() == 1) {
+            return annoPk.iterator().next().getName();
+        }
+
+        throw new IllegalStateException(
+                "Could no decide primary key of entity class [" + clazz + "]");
     }
 
     static ReflectionUtils.FieldFilter fieldFilter(

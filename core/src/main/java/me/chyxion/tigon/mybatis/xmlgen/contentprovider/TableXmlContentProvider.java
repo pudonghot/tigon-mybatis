@@ -2,6 +2,7 @@ package me.chyxion.tigon.mybatis.xmlgen.contentprovider;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import me.chyxion.tigon.mybatis.util.EntityUtils;
 import me.chyxion.tigon.mybatis.xmlgen.XmlGenArg;
 
 /**
@@ -19,6 +20,6 @@ public class TableXmlContentProvider extends XmlContentProvider {
         val tableName = arg.getTable();
         val resolvedTableName = arg.getBeanFactory().resolveEmbeddedValue(tableName);
         log.info("Table content [{}] generated from [{}].", resolvedTableName, tableName);
-        return wrapQuotationMark(arg, resolvedTableName);
+        return new Content(EntityUtils.quotationWrap(resolvedTableName));
     }
 }

@@ -1,15 +1,12 @@
 package me.chyxion.tigon.mybatis.xmlgen.contentprovider;
 
-import lombok.val;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 import java.util.Collections;
-import org.springframework.util.StringUtils;
 import me.chyxion.tigon.mybatis.xmlgen.XmlGenArg;
-import me.chyxion.tigon.mybatis.TigonMyBatisProperties;
 
 /**
  * @author Donghuang
@@ -24,20 +21,6 @@ public abstract class XmlContentProvider {
      * @return sql tag content
      */
     public abstract Content content(final XmlGenArg arg);
-
-    /**
-     * wrap content quotation mark
-     *
-     * @param arg arg
-     * @param content content
-     * @return content
-     */
-    protected Content wrapQuotationMark(final XmlGenArg arg, final String content) {
-        val props = arg.getBeanFactory().getBean(TigonMyBatisProperties.class);
-        val quotationMark = props.getQuotationMark();
-        return new Content(StringUtils.hasText(quotationMark) ?
-                    quotationMark + content + quotationMark : content);
-    }
 
     @Getter
     @Setter
