@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Modifier;
 import me.chyxion.tigon.mybatis.*;
 import java.util.stream.Collectors;
-import org.springframework.util.StringUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 

@@ -6,8 +6,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import me.chyxion.tigon.mybatis.util.StrUtils;
-import org.springframework.util.StringUtils;
-
+import me.chyxion.tigon.mybatis.util.EntityUtils;
 import static me.chyxion.tigon.mybatis.Criterion.Type.*;
 
 /**
@@ -449,7 +448,7 @@ public class Search implements Serializable {
     }
 
     /**
-     * col is not not in values
+     * col is not in values
      *
      * @param col col name
      * @param values values
@@ -460,7 +459,7 @@ public class Search implements Serializable {
     }
 
     /**
-     * col is not not in values
+     * col is not in values
      *
      * @param col col name
      * @param values values
@@ -657,16 +656,7 @@ public class Search implements Serializable {
      * @return orders
      */
     public Map<String, Object> orders() {
-        val ordersRtn = new LinkedHashMap<String, Object>(orders.size());
-        val hasTable = StrUtils.isNotBlank(table);
-
-        for (val order : orders.entrySet()) {
-            val col = order.getKey();
-            ordersRtn.put(hasTable && !col.contains(".") ?
-                table + "." + col : col, order.getValue());
-        }
-
-        return ordersRtn;
+        return orders;
     }
 
     /**
