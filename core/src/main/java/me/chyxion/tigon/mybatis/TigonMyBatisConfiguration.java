@@ -174,13 +174,13 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             log.info("Startup check is on, run database table check.");
             val search = new Search().limit(1);
             for (val mapper : mappers) {
-                val mapperInterface = SystemMetaObject.forObject(mapper).getValue("h.mapperInterface");
+                val mapperInterfaces = mapper.getClass().getInterfaces();
                 if (mapper instanceof BaseQueryMapper) {
-                    log.info("Mapper [{}] is instance of BaseQueryMapper, run #list to check database table.", mapperInterface);
+                    log.info("Mapper [{}] is instance of BaseQueryMapper, run #list to check database table.", mapperInterfaces);
                     ((BaseQueryMapper) mapper).list(search);
                 }
                 else {
-                    log.debug("Mapper [{}] is not instance of BaseQueryMapper, ignore.", mapperInterface);
+                    log.debug("Mapper [{}] is not instance of BaseQueryMapper, ignore.", mapperInterfaces);
                 }
             }
         }
