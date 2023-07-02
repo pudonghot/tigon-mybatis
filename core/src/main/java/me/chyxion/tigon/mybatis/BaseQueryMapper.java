@@ -4,7 +4,6 @@ import lombok.val;
 import java.util.List;
 import java.util.Collection;
 import java.util.function.Consumer;
-import org.springframework.lang.Nullable;
 import org.apache.ibatis.annotations.Param;
 import me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 import static me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl.Tag.SELECT;
@@ -107,11 +106,12 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
      * @param pageSize page size
      * @param search search
      * @param scanner scanner
+     * @return false if no data found
      */
-    default void scan(final int pageSize,
+    default boolean scan(final int pageSize,
                       final Search search,
                       final Consumer<Entity> scanner) {
-        scan(pageSize, search, scanner, null);
+        return batchScan(pageSize, search, list -> list.forEach(scanner::accept));
     }
 
     /**
@@ -120,54 +120,20 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
      * @param pageSize page size
      * @param search search
      * @param scanner scanner
-     * @param onNoData on no data callback
+     * @return false if no data found
      */
-    default void scan(final int pageSize,
-                      final Search search,
-                      final Consumer<Entity> scanner,
-                      @Nullable
-                      final Runnable onNoData) {
-        batchScan(pageSize, search, list -> list.forEach(scanner::accept), onNoData);
-    }
-
-    /**
-     * scan entities
-     *
-     * @param pageSize page size
-     * @param search search
-     * @param scanner scanner
-     */
-    default void batchScan(final int pageSize,
+    default boolean batchScan(final int pageSize,
                            final Search search,
                            final Consumer<List<Entity>> scanner) {
-        batchScan(pageSize, search, scanner, null);
-    }
-
-    /**
-     * scan entities
-     *
-     * @param pageSize page size
-     * @param search search
-     * @param scanner scanner
-     * @param onNoData on no data callback
-     */
-    default void batchScan(final int pageSize,
-                           final Search search,
-                           final Consumer<List<Entity>> scanner,
-                           @Nullable
-                           final Runnable onNoData) {
         val total = count(search);
 
         if (total > 0) {
             for (int start = 0; start < total; start += pageSize) {
                 scanner.accept(list(search.offset(start).limit(Math.min(pageSize, total - start))));
             }
-            return;
+            return true;
         }
 
-        // no data found, invoke callback
-        if (onNoData != null) {
-            onNoData.run();
-        }
+        return false;
     }
 }
