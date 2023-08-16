@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.function.Consumer;
 import me.chyxion.tigon.mybatis.util.StrUtils;
-import me.chyxion.tigon.mybatis.util.EntityUtils;
 import static me.chyxion.tigon.mybatis.Criterion.Type.*;
 
 /**
@@ -69,6 +68,15 @@ public class Search implements Serializable {
         PROCESSORS.put(OR, arg -> arg.addSubsearch());
         PROCESSORS.put(BUILDER, arg ->
             ((Consumer<ProcArg>) arg.getCriterion().getAttr()).accept(arg));
+    }
+
+    /**
+     * default builder
+     *
+     * @return search
+     */
+    public static Search of() {
+        return new Search();
     }
 
     /**
@@ -524,11 +532,13 @@ public class Search implements Serializable {
      * @param search search
      * @return this
      */
-    public Search and(final Search search) {
+    public Search and(final Search search, final Search ... searches) {
         if (StrUtils.isBlank(search.table)) {
             search.table = table;
         }
         criteria.add(new Criterion(AND, search));
+        eachSearch(searches, this::and);
+
         return this;
     }
 
@@ -538,12 +548,22 @@ public class Search implements Serializable {
      * @param search search
      * @return this
      */
-    public Search or(final Search search) {
+    public Search or(final Search search, final Search ... searches) {
         if (StrUtils.isBlank(search.table)) {
             search.table = table;
         }
         criteria.add(new Criterion(OR, search));
+        eachSearch(searches, this::or);
+
         return this;
+    }
+
+    void eachSearch(final Search[] searches, final Consumer<Search> consumer) {
+        if (searches != null && searches.length > 0) {
+            for (val search : searches) {
+                consumer.accept(search);
+            }
+        }
     }
 
     /**
@@ -782,7 +802,7 @@ public class Search implements Serializable {
     }
 
     List<Object> assemble(final boolean subSearch) {
-        val result = new LinkedList<Object>();
+        val result = new LinkedList<>();
         val arg = new ProcArg(table, result);
 
         for (val criterion : criteria) {
