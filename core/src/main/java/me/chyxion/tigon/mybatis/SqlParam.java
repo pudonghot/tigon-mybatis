@@ -21,6 +21,6 @@ public class SqlParam implements Serializable {
      */
     @Override
     public String toString() {
-        return "SQL param [" + value + "], raw [" + raw + "].";
+        return value + "(" + raw + ")";
     }
 }

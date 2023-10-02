@@ -228,9 +228,8 @@ public final class EntityUtils {
     static boolean isNormal(final Field field) {
         val modifiers = field.getModifiers();
         return !Modifier.isTransient(modifiers) &&
-                !field.isAnnotationPresent(Transient.class) &&
-                !Modifier.isFinal(modifiers) &&
                 !Modifier.isPublic(modifiers) &&
-                !Modifier.isStatic(modifiers);
+                !Modifier.isStatic(modifiers) &&
+                !field.isAnnotationPresent(Transient.class);
     }
 }

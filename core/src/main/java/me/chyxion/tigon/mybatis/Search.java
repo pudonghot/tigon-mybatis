@@ -790,6 +790,14 @@ public class Search implements Serializable {
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return assemble().toString();
+    }
+
     // --
     // private methods
 

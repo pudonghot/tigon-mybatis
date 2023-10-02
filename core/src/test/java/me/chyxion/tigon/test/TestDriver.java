@@ -1,13 +1,12 @@
 package me.chyxion.tigon.test;
 
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.Test;
+import org.junit.Assert;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import me.chyxion.tigon.mybatis.Search;
-import me.chyxion.tigon.mybatis.util.StrUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Donghuang
