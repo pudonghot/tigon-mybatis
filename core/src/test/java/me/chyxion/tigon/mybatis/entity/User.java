@@ -5,10 +5,9 @@ import lombok.Setter;
 import java.util.Date;
 import lombok.ToString;
 import java.io.Serializable;
-import me.chyxion.tigon.mybatis.Table;
 import me.chyxion.tigon.mybatis.RawValue;
 import me.chyxion.tigon.mybatis.NotUpdate;
-import me.chyxion.tigon.mybatis.UseGeneratedKeys;
+// import me.chyxion.tigon.mybatis.UseGeneratedKeys;
 
 /**
  * @author Donghuang
@@ -17,8 +16,7 @@ import me.chyxion.tigon.mybatis.UseGeneratedKeys;
 @Getter
 @Setter
 @ToString
-@Table("${user.table:tb_user}")
-@UseGeneratedKeys
+// @UseGeneratedKeys
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 

@@ -26,15 +26,8 @@
 
     <!-- Search Assemble -->
     <sql id="assemble">
-        <foreach collection="__search__.assemble()" item="it">
-            <choose>
-                <when test="it instanceof me.chyxion.tigon.mybatis.SqlFragment">
-                    ${it}
-                </when>
-                <otherwise>
-                    #{it}
-                </otherwise>
-            </choose>
+        <foreach collection="__search__.assemble()" item="__val__">
+            <include refid="Tigon.__val__" />
         </foreach>
     </sql>
     <!--/ Search Assemble -->

@@ -16,11 +16,19 @@ public class SqlParam implements Serializable {
     private final boolean raw;
     private final Object value;
 
+    public static SqlParam rawVal(final Object val) {
+        return new SqlParam(true, val);
+    }
+
+    public static SqlParam val(final Object val) {
+        return new SqlParam(false, val);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String toString() {
-        return value + "(" + raw + ")";
+        return String.valueOf(raw ? value : "[" + value + "]");
     }
 }

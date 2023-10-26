@@ -3,6 +3,7 @@ package me.chyxion.tigon.mybatis.mapper;
 import java.util.List;
 import me.chyxion.tigon.mybatis.Search;
 import me.chyxion.tigon.mybatis.BaseMapper;
+import me.chyxion.tigon.mybatis.Table;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
 import me.chyxion.tigon.mybatis.entity.User;
@@ -12,6 +13,7 @@ import me.chyxion.tigon.mybatis.entity.User;
  * @date Nov 15, 2020 22:42:55
  */
 @Mapper
+@Table("${user.table:tb_user}")
 public interface UserMapper extends BaseMapper<Integer, User> {
 
     /**

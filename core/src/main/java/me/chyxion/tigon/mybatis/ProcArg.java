@@ -35,11 +35,12 @@ public class ProcArg implements Serializable {
 
     /**
      * add SQL
+     *
      * @param sql sql
      * @return this
      */
     public ProcArg addSql(final String sql) {
-        result.add(new SqlFragment(sql));
+        result.add(SqlParam.rawVal(sql));
         return this;
     }
 

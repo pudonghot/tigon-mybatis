@@ -22,7 +22,22 @@ public @interface RawValue {
 
     /**
      * value
+     *
      * @return raw value
      */
     String value() default "";
+
+    /**
+     * use in insert
+     *
+     * @return true if use in insert
+     */
+    boolean forInsert() default true;
+
+    /**
+     * use in update
+     *
+     * @return true if use in update
+     */
+    boolean forUpdate() default false;
 }

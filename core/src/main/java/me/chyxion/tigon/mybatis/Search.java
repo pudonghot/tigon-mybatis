@@ -844,8 +844,8 @@ public class Search implements Serializable {
         }
 
         if (subSearch && criteria.size() > 1) {
-            result.add(0, new SqlFragment("("));
-            result.add(new SqlFragment(")"));
+            result.add(0, SqlParam.rawVal("("));
+            result.add(SqlParam.rawVal(")"));
         }
         return result;
     }

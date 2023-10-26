@@ -6,3 +6,4 @@ mybatis:
 tigon:
   mybatis:
     quotation-mark: "`"
+    insert-default-instead-null: false

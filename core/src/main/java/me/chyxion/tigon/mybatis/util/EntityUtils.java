@@ -91,7 +91,32 @@ public final class EntityUtils {
      * @return insert map
      */
     public static Map<String, SqlParam> insertMap(final Object entity) {
-        return toMap(entity, false);
+        val entityClass = entity.getClass();
+
+        val insertDefaultInsteadNull = TigonMyBatisConfiguration.getStaticInstance()
+                .getProperties().isInsertDefaultInsteadNull();
+
+        val mapRtn = new LinkedHashMap<String, SqlParam>();
+        ReflectionUtils.doWithFields(entityClass, field -> {
+            field.setAccessible(true);
+            val fieldName = field.getName();
+
+            val rawValue = getRawValue(true, entity, field);
+            if (rawValue != null) {
+                mapRtn.put(fieldName, rawValue);
+                return;
+            }
+
+            val value = ReflectionUtils.getField(field, entity);
+            if (insertDefaultInsteadNull && value == null) {
+                mapRtn.put(fieldName, SqlParam.rawVal("default"));
+                return;
+            }
+
+            mapRtn.put(fieldName, SqlParam.val(value));
+        }, fieldFilter(entity, false));
+
+        return mapRtn;
     }
 
     /**
@@ -101,7 +126,50 @@ public final class EntityUtils {
      * @return update map
      */
     public static Map<String, SqlParam> updateMap(final Object entity) {
-        return toMap(entity, true);
+        val entityClass = entity.getClass();
+        val mapRtn = new LinkedHashMap<String, SqlParam>();
+        ReflectionUtils.doWithFields(entityClass, field -> {
+            field.setAccessible(true);
+            val fieldName = field.getName();
+
+            val rawValue = getRawValue(false, entity, field);
+            if (rawValue != null) {
+                mapRtn.put(fieldName, rawValue);
+                return;
+            }
+
+            mapRtn.put(fieldName, SqlParam.val(ReflectionUtils.getField(field, entity)));
+
+        }, fieldFilter(entity, true));
+
+        return mapRtn;
+    }
+
+    static SqlParam getRawValue(final boolean forInsert, final Object entity, final Field field) {
+
+        val annoRawValue =
+                field.getAnnotation(RawValue.class);
+
+        if (annoRawValue != null) {
+            // not use for insert
+            if (forInsert && !annoRawValue.forInsert()) {
+                return null;
+            }
+
+            // not use for update
+            if (!forInsert && !annoRawValue.forUpdate()) {
+                return null;
+            }
+
+            val annoValue = annoRawValue.value();
+            if (StrUtils.isNotBlank(annoValue)) {
+                return SqlParam.rawVal(annoValue);
+            }
+
+            return SqlParam.rawVal(ReflectionUtils.getField(field, entity));
+        }
+
+        return null;
     }
 
     /**
@@ -116,34 +184,6 @@ public final class EntityUtils {
             field -> cols.add(field.getName()),
             EntityUtils::isNormal);
         return cols.stream().map(EntityUtils::quotationWrap).collect(Collectors.joining(", "));
-    }
-
-    static Map<String, SqlParam> toMap(final Object entity, final boolean forUpdate) {
-        val entityClass = entity.getClass();
-        val mapRtn = new LinkedHashMap<String, SqlParam>();
-        ReflectionUtils.doWithFields(entityClass, field -> {
-            field.setAccessible(true);
-
-            boolean rawValue = false;
-            Object value = null;
-            val annoRawValue =
-                field.getAnnotation(RawValue.class);
-
-            if (annoRawValue != null) {
-                rawValue = true;
-                val annoValue = annoRawValue.value();
-                if (StrUtils.isNotBlank(annoValue)) {
-                    value = annoValue;
-                }
-            }
-
-            mapRtn.put(field.getName(),
-                new SqlParam(rawValue,
-                    value != null ?
-                    value : ReflectionUtils.getField(field, entity)));
-        }, fieldFilter(entity, forUpdate));
-
-        return mapRtn;
     }
 
     /**

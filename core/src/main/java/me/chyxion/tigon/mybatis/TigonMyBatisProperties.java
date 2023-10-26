@@ -24,4 +24,9 @@ public class TigonMyBatisProperties implements Serializable {
      * database quotation mark，for example：MySQL `，Oracle "
      */
     private String quotationMark;
+
+    /**
+     * insert DEFAULT instead NULL
+     */
+    private boolean insertDefaultInsteadNull = true;
 }
