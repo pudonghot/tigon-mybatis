@@ -23,12 +23,6 @@ public class Search implements Serializable {
         DESC
     }
 
-    private final List<Criterion> criteria = new LinkedList<>();
-    private String table;
-    private Integer offset;
-    private Integer limit;
-    private final Map<String, Object> orders = new LinkedHashMap<>();
-    private final Map<String, Object> attrs = new HashMap<>();
     private static final Map<Criterion.Type, Consumer<ProcArg>> PROCESSORS;
 
     static {
@@ -68,6 +62,31 @@ public class Search implements Serializable {
         PROCESSORS.put(OR, arg -> arg.addSubsearch());
         PROCESSORS.put(BUILDER, arg ->
             ((Consumer<ProcArg>) arg.getCriterion().getAttr()).accept(arg));
+    }
+
+    // core fields
+    private final List<Criterion> criteria = new LinkedList<>();
+    private String table;
+    private Integer offset;
+    private Integer limit;
+    private final Map<String, Object> orders = new LinkedHashMap<>();
+    private final Map<String, Object> attrs = new HashMap<>();
+
+    /**
+     * clone search
+     *
+     * @return new search
+     */
+    public static Search clone(final Search origin) {
+        val search = of();
+        search.table = origin.table;
+        search.criteria.addAll(origin.criteria);
+        search.orders.putAll(origin.orders);
+        search.limit = origin.limit;
+        search.offset = origin.offset;
+        search.attrs.putAll(origin.attrs);
+
+        return search;
     }
 
     /**
