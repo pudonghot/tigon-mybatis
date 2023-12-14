@@ -4,6 +4,7 @@ import lombok.val;
 import java.util.*;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import lombok.EqualsAndHashCode;
 import java.util.function.Consumer;
 import me.chyxion.tigon.mybatis.util.StrUtils;
 import static me.chyxion.tigon.mybatis.Criterion.Type.*;
@@ -12,6 +13,7 @@ import static me.chyxion.tigon.mybatis.Criterion.Type.*;
  * @author Donghuang
  * @date May 12, 2015 3:00:40 PM
  */
+@EqualsAndHashCode
 public class Search implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -65,7 +67,7 @@ public class Search implements Serializable {
     }
 
     // core fields
-    private final List<Criterion> criteria = new LinkedList<>();
+    private final Set<Criterion> criteria = new LinkedHashSet<>();
     private String table;
     private Integer offset;
     private Integer limit;

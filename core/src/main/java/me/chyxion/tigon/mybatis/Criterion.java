@@ -1,6 +1,7 @@
 package me.chyxion.tigon.mybatis;
 
 import lombok.Getter;
+import lombok.Value;
 import java.util.Arrays;
 import java.io.Serializable;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.Collections;
  * @author Donghuang
  * @date 2017/1/24 10:23
  */
+@Value
 @Getter
 class Criterion implements Serializable {
     private static final long serialVersionUID = 1L;
