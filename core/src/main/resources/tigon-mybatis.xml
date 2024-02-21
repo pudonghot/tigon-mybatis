@@ -194,7 +194,7 @@
     <!-- Find One -->
     <sql id="find">
         select
-        <include refid="cols" />
+        <include refid="colsOfFind" />
         from
         <include refid="table" />
         <include refid="Tigon.search" />
@@ -204,7 +204,7 @@
     <!-- List -->
     <sql id="list">
         select
-        <include refid="cols" />
+        <include refid="colsOfList" />
         from
         <include refid="table" />
         <include refid="Tigon.search" />
@@ -214,7 +214,7 @@
     <sql id="list" databaseId="oracle">
         select *
         <if test="__search__ instanceof me.chyxion.tigon.mybatis.Search and (__search__.offset() != null or __search__.limit() != null)">
-            from (select <include refid="cols" />,
+            from (select <include refid="listCols" />,
             row_number() over (
             <choose>
                 <when test="!__search__.orders().isEmpty()">
@@ -272,7 +272,7 @@
     </sql>
     <!--/ List -->
 
-    <!-- Select Col -->
+    <!-- Select Single Col -->
     <sql id="selectCol">
         <bind name="__us_col__" value="@me.chyxion.tigon.mybatis.util.EntityUtils@quotationWrap(__col__)" />
         select ${__us_col__} from

@@ -3,8 +3,8 @@ package me.chyxion.tigon.mybatis;
 import me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 import static me.chyxion.tigon.mybatis.xmlgen.annotation.MapperXmlEl.Tag.SQL;
 import me.chyxion.tigon.mybatis.xmlgen.contentprovider.ColsXmlContentProvider;
-import me.chyxion.tigon.mybatis.xmlgen.contentprovider.PrimaryKeyXmlContentProvider;
 import me.chyxion.tigon.mybatis.xmlgen.contentprovider.TableXmlContentProvider;
+import me.chyxion.tigon.mybatis.xmlgen.contentprovider.PrimaryKeyXmlContentProvider;
 
 /**
  * @author Donghuang
@@ -13,6 +13,8 @@ import me.chyxion.tigon.mybatis.xmlgen.contentprovider.TableXmlContentProvider;
 @MapperXmlEl(tag = SQL, id = "table", contentProvider = TableXmlContentProvider.class)
 @MapperXmlEl(tag = SQL, id = "primaryKey", contentProvider = PrimaryKeyXmlContentProvider.class)
 @MapperXmlEl(tag = SQL, id = "cols", contentProvider = ColsXmlContentProvider.class)
+@MapperXmlEl(tag = SQL, id = "colsOfFind", include = "cols")
+@MapperXmlEl(tag = SQL, id = "colsOfList", include = "cols")
 public interface SuperMapper<Enity> {
     String PARAM_MODEL_KEY = "__model__";
     String PARAM_MODELS_KEY = "__models__";
