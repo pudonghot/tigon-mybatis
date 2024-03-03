@@ -12,7 +12,7 @@
                 where <include refid="Tigon.assemble" />
             </if>
 
-            <if test="!_parameter.containsKey(&quot;__is_count__&quot;)">
+            <if test="!_parameter.containsKey(&quot;__no_paging__&quot;)">
                 <include refid="Tigon.orderBy" />
                 <include refid="Tigon.limit" />
             </if>
@@ -71,12 +71,18 @@
     </sql>
     <!--/ Limit -->
 
-    <!-- Search For Count, Ignore Orders And Limit -->
-    <sql id="searchForCount">
-        <bind name="__is_count_dummy__" value="_parameter.put('__is_count__', true)" />
+    <!-- Mark query is no paging -->
+    <sql id="noPaging">
+        <bind name="__dummy_var_no_paging__" value="_parameter.put('__no_paging__', true)" />
+    </sql>
+    <!--/ Mark query is no paging -->
+
+    <!-- No paging search -->
+    <sql id="npSearch">
+        <include refid="Tigon.noPaging" />
         <include refid="Tigon.search" />
     </sql>
-    <!--/ Search For Count -->
+    <!--/ No paging search -->
 
     <!-- Insert -->
     <sql id="insert">
@@ -180,14 +186,14 @@
         select exists (
             select 1 from
             <include refid="table" />
-            <include refid="Tigon.searchForCount" />
+            <include refid="Tigon.npSearch" />
         )
     </sql>
 
     <sql id="exists" databaseId="oracle">
         select count(*) from
         <include refid="table" />
-        <include refid="Tigon.searchForCount" />
+        <include refid="Tigon.npSearch" />
     </sql>
     <!--/ Exists -->
 
@@ -285,7 +291,7 @@
     <sql id="count">
         select count(*) from
         <include refid="table" />
-        <include refid="Tigon.searchForCount" />
+        <include refid="Tigon.npSearch" />
     </sql>
     <!--/ Count -->
 

@@ -717,12 +717,29 @@ public class Search implements Serializable {
     }
 
     /**
+     * if search has criterion of col
+     *
      * @param col col
      * @return true if has col criterion
      */
     public boolean hasCriterion(final String col) {
         for (val criterion : criteria) {
             if (col.equals(criterion.getCol())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * if search has criterion of col prefix
+     *
+     * @param colPrefix col prefix
+     * @return true if has col criterion of prefix
+     */
+    public boolean hasCriterionPrefix(final String colPrefix) {
+        for (val criterion : criteria) {
+            if (criterion.getCol().startsWith(colPrefix)) {
                 return true;
             }
         }
