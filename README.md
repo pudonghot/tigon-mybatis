@@ -4,7 +4,7 @@
 
 Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以下特点
 
-- 代码又少又壮(1885行)，绝不做多余的事情
+- 代码又少又壮(2000行左右)，绝不做多余的事情
 - 仅需Mapper继承接口，实现`增` `删` `改` `查`，无额外配置，爽到没女朋友
 - 用完即走，毫不留恋
 
@@ -14,9 +14,9 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以
 
 ```xml
 <dependency>
-  <groupId>me.chyxion.tigon</groupId>
+  <groupId>com.pudonghot.tigon</groupId>
   <artifactId>tigon-mybatis</artifactId>
-  <version>0.0.8</version>
+  <version>1.0.0</version>
 </dependency>
 ```
 
@@ -27,21 +27,21 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以
 ##### 定义Entity
 
 ```java
-package me.chyxion.tigon.mybatis.entity;
+package com.pudonghot.tigon.mybatis.entity;
 
 import lombok.Getter;
 import lombok.Setter;
 import java.util.Date;
 import lombok.ToString;
 import java.io.Serializable;
-import me.chyxion.tigon.mybatis.Table;
-import me.chyxion.tigon.mybatis.NotUpdate;
-import me.chyxion.tigon.mybatis.NotUpdateWhenNull;
+import com.pudonghot.tigon.mybatis.NotUpdate;
+import lombok.experimental.FieldNameConstants;
+import com.pudonghot.tigon.mybatis.NotUpdateWhenNull;
 
 @Getter
 @Setter
 @ToString
-@Table("tb_user")
+@FieldNameConstants
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -76,14 +76,16 @@ public class User implements Serializable {
 ##### 定义Mapper
 
 ```java
-package me.chyxion.tigon.mybatis.mapper;
+package com.pudonghot.tigon.mybatis.mapper;
 
 import java.util.List;
-import me.chyxion.tigon.mybatis.BaseMapper;
+import com.pudonghot.tigon.mybatis.Table;
+import com.pudonghot.tigon.mybatis.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
-import me.chyxion.tigon.mybatis.entity.User;
+import entity.com.pudonghot.tigon.mybatis.User;
 
 @Mapper
+@Table("tb_user")
 public interface UserMapper extends BaseMapper<Integer, User> {
 }
 ```
@@ -138,8 +140,8 @@ val user = mapper.find(id);
 ```java
 // 根据属性account, mobile查询单个对象
 val user = mapper.find(
-    new Search("account", "donghuang")
-        .eq("mobile", "137647788xx"));
+    Search.of(User.Fields.account, "donghuang")
+        .eq(User.Fields.mobile, "13764778899"));
 ```
 
 根据属性查询列表
@@ -148,14 +150,15 @@ val user = mapper.find(
 // 根据属性birthDate, gender查询数据列表
 // 查询结果根据属性birthDate升序排序
 // 返回数据限制42条
-val users = mapper.list(new Search()
-    .between("birthDate",
-        DateUtils.parseDate("1982-04-04"),
-        DateUtils.parseDate("1994-04-04")
-    )
-    .eq("gender", User.Gender.MALE)
-    .asc("birthDate")
-    .limit(42));
+val users = mapper.list(
+    Search.of(User.Fields.gender, User.Gender.MALE)
+        .between(User.Fields.birthDate,
+            DateUtils.parseDate("1982-04-04"),
+            DateUtils.parseDate("1994-04-04")
+        )
+        .asc(User.Fields.birthDate)
+        .limit(42)
+    );
 ```
 
 `Search`对象支持的`API`
@@ -205,25 +208,25 @@ mapper.update(user);
 
 ```java
 val update = new HashMap<String, Object>(6);
-update.put("name", "东皇大叔");
-update.put("updatedBy", "SYS");
-update.put("updatedAt", new Date());
+update.put(User.Fields.name, "东皇大叔");
+update.put(User.Fields.updatedBy, "SYS");
+update.put(User.Fields.updatedAt, new Date());
 // 通过Map更新ID为1的记录
 mapper.update(update, 1);
 // 效果同上
-// mapper.update(update, new Search("id", 1));
-// mapper.update(update, new Search(1));
+// mapper.update(update, Search.of(User.Fields.id, 1));
+// mapper.update(update, Search.of(1));
 ```
 
 更新列为`NULL`
 
 ```java
 // 更新id为274229记录的属性列remark为null
-mapper.setNull("remark", 274229);
+mapper.setNull(User.Fields.remark, 274229);
 // 更新id为1154记录的属性列remark为null
-mapper.setNull("remark", new Search("id", 1154));
+mapper.setNull(User.Fields.remark, Search.of(User.Fields.id, 1154));
 // 更新全表的属性列remark为null，小心操作！！！
-mapper.setNull("remark", new Search());
+mapper.setNull(User.Fields.remark, Search.of());
 ```
 
 ##### IV. 删除
@@ -239,7 +242,7 @@ mapper.delete(1);
 
 ```java
 // 根据属性ID删除记录
-mapper.delete(new Search("id", 1));
+mapper.delete(Search.of("id", 1));
 // 等同于 mapper.delete(1);
 ```
 
@@ -250,8 +253,8 @@ mapper.delete(new Search("id", 1));
 ### 配置说明
 
 - SpringBoot项目，无需其他操作，引入依赖即可
-- Spring项目，注册Bean *me.chyxion.tigon.mybatis.TigonMyBatisConfiguration*
-- 业务Mapper继承*me.chyxion.tigon.mybatis.BaseMapper*或相关衍生Mapper，*Base(Query, Insert, Update, Delete)Mapper*
+- Spring项目，注册Bean *com.pudonghot.tigon.mybatis.TigonMyBatisConfiguration*
+- 业务Mapper继承*com.pudonghot.tigon.mybatis.BaseMapper*或相关衍生Mapper，*Base(Query, Insert, Update, Delete)Mapper*
 
 ### 原理
 
@@ -260,28 +263,6 @@ Tigon MyBatis并**不改变**MyBatis相关功能，所做的只是在程序**启
 ### 代码阅读
 
 都看到这里了，动动小手clone工程，直接打开[UserMapperTest.java](core/src/test/java/me/chyxion/tigon/mybatis/test/UserMapperTest.java)右击调试运行，心事全都被你发现，代码写得烂的地方回来喷我，一定改。
-
-### 其他
-
-在前面使用`Search`的例子中，我们需要一些`User`的属性常量字符串，比如
-
-```java
-val user = mapper.find(new Search("account", "donghuang"));
-```
-
-可以将这些常量定义在`User`类中，如
-
-```java
-public static final String ACCOUNT = "account";
-```
-
-使用过程中可以使用属性常量，如
-
-```java
-val user = mapper.find(new Search(User.ACCOUNT, "donghuang"));
-```
-
-也可以使用`Lombok`的`@FieldNameConstants`注解生成，只是这个注解还处于试验阶段，有一定不稳定风险。
 
 ### 最后
 
