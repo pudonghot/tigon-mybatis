@@ -1,11 +1,12 @@
 package com.pudonghot.tigon.mybatis;
 
-import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 import lombok.val;
 import java.util.List;
 import java.util.Collection;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.ibatis.annotations.Param;
+import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 
 /**
  * @author Donghuang
@@ -123,11 +124,31 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
     default boolean batchScan(final int pageSize,
                            final Search search,
                            final Consumer<List<Entity>> scanner) {
-        val total = count(search);
+        return batchScan(pageSize, search, this::count, this::list, scanner);
+    }
+
+    /**
+     * scan entities
+     *
+     * @param pageSize page size
+     * @param search search
+     * @param countMethod count method
+     * @param listMethod list method
+     * @param scanner scanner
+     * @return false if no data found
+     */
+    default <T> boolean batchScan(
+            final int pageSize,
+            final Search search,
+            final Function<Search, Integer> countMethod,
+            final Function<Search, List<T>> listMethod,
+            final Consumer<List<T>> scanner) {
+
+        val total = countMethod.apply(search);
 
         if (total > 0) {
             for (int start = 0; start < total; start += pageSize) {
-                scanner.accept(list(search.offset(start).limit(Math.min(pageSize, total - start))));
+                scanner.accept(listMethod.apply(search.offset(start).limit(Math.min(pageSize, total - start))));
             }
             return true;
         }

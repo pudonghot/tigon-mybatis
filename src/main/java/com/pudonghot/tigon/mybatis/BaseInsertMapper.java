@@ -1,9 +1,8 @@
 package com.pudonghot.tigon.mybatis;
 
 import java.util.Collection;
-
-import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 import org.apache.ibatis.annotations.Param;
+import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 
 /**
  * @author Donghuang
