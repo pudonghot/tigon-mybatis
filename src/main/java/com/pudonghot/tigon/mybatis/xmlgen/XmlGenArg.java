@@ -1,14 +1,14 @@
 package com.pudonghot.tigon.mybatis.xmlgen;
 
-import com.pudonghot.tigon.mybatis.SuperMapper;
-import com.pudonghot.tigon.mybatis.util.AssertUtils;
 import lombok.val;
 import lombok.Getter;
 import org.w3c.dom.Document;
 import lombok.extern.slf4j.Slf4j;
 import com.pudonghot.tigon.mybatis.Table;
 import org.apache.ibatis.parsing.XPathParser;
+import com.pudonghot.tigon.mybatis.SuperMapper;
 import com.pudonghot.tigon.mybatis.util.StrUtils;
+import com.pudonghot.tigon.mybatis.util.AssertUtils;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;

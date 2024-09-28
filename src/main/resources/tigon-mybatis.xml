@@ -92,24 +92,24 @@
         <choose>
             <!-- Model -->
             <when test="_parameter.containsKey(&quot;__model__&quot;)">
-                <include refid="Tigon._insertValues" />
+                (<include refid="Tigon.modelValues" />)
             </when>
             <!-- Models -->
             <otherwise>
                 <foreach item="__model__" collection="__models__" separator=", ">
-                    <include refid="Tigon._insertValues" />
+                    (<include refid="Tigon.modelValues" />)
                 </foreach>
             </otherwise>
         </choose>
     </sql>
     <!--/ Insert -->
 
-    <sql id="_insertValues">
+    <sql id="modelValues">
         <if test="__model__ instanceof com.pudonghot.tigon.mybatis.BasicEntity">
             <bind name="__before_insert_dummy__" value="__model__.beforeInsert()" />
         </if>
         <foreach collection="@com.pudonghot.tigon.mybatis.util.EntityUtils@insertMap(__model__)"
-                 item="__val__" open="(" separator=", " close=")">
+                 item="__val__" separator=", ">
             <include refid="Tigon.__val__" />
         </foreach>
     </sql>

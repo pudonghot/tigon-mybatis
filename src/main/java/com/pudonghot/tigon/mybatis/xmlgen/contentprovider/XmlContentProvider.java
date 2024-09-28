@@ -1,12 +1,12 @@
 package com.pudonghot.tigon.mybatis.xmlgen.contentprovider;
 
-import com.pudonghot.tigon.mybatis.xmlgen.XmlGenArg;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
+import org.w3c.dom.Node;
 import java.util.ArrayList;
-import org.w3c.dom.Element;
 import java.util.Collections;
+import com.pudonghot.tigon.mybatis.xmlgen.XmlGenArg;
 
 /**
  * @author Donghuang
@@ -25,25 +25,22 @@ public abstract class XmlContentProvider {
     @Getter
     @Setter
     public static class Content {
-        private final boolean text;
         private final String content;
-        private final List<Element> elements;
+        private final List<Node> nodes;
 
         public Content(final String content) {
-            this.text = true;
             this.content = content;
-            this.elements = Collections.emptyList();
+            this.nodes = Collections.emptyList();
         }
 
-        public Content(final List<Element> elements) {
-            this.text = false;
+        public Content(final List<Node> nodes) {
             this.content = null;
-            this.elements = elements;
+            this.nodes = nodes;
         }
 
-        public Content(final Element element) {
+        public Content(final Node element) {
             this(new ArrayList<>());
-            elements.add(element);
+            nodes.add(element);
         }
     }
 }

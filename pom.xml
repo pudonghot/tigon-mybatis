@@ -18,10 +18,10 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 
-        <spring.version>5.3.28</spring.version>
-        <spring-boot.version>2.7.13</spring-boot.version>
-        <mybatis.version>3.5.13</mybatis.version>
-        <mybatis-spring.version>2.1.1</mybatis-spring.version>
+        <spring.version>6.1.2</spring.version>
+        <spring-boot.version>3.3.3</spring-boot.version>
+        <mybatis.version>3.5.16</mybatis.version>
+        <mybatis-spring.version>3.0.4</mybatis-spring.version>
 
         <revision>1.0.0-SNAPSHOT</revision>
     </properties>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.3.1</version>
+            <version>3.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>

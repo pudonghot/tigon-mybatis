@@ -2,6 +2,8 @@ package com.pudonghot.tigon.mybatis;
 
 import lombok.*;
 import java.util.*;
+
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 import java.io.InputStream;
 import org.w3c.dom.Document;
@@ -16,6 +18,7 @@ import javax.xml.transform.dom.DOMSource;
 import org.springframework.core.io.Resource;
 import org.apache.ibatis.parsing.XPathParser;
 import javax.xml.transform.TransformerFactory;
+import org.springframework.util.CollectionUtils;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import javax.xml.transform.stream.StreamResult;
@@ -28,8 +31,10 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.springframework.context.ApplicationContext;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.springframework.beans.factory.InitializingBean;
+import com.pudonghot.tigon.mybatis.xmlgen.XmlGenCustomizer;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
@@ -54,6 +59,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     private ApplicationContext applicationContext;
     @Autowired(required = false)
     private SqlSessionFactory[] sqlSessionFactories;
+    @Autowired(required = false)
+    private List<XmlGenCustomizer> customizers;
     /**
      * execute #afterPropertiesSet after Mappers initialized
      */
@@ -93,6 +100,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
         val resource = resources[0];
         log.info("Tigon namespace XML resource [{}] found.", resource);
 
+        val customXmlEls = getCustomXmlEls();
+
         for (val sqlSessionFactory : sqlSessionFactories) {
             val config = sqlSessionFactory.getConfiguration();
             val sqlFragments = config.getSqlFragments();
@@ -102,7 +111,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
                     config,
                     ((GenericApplicationContext) applicationContext).getBeanFactory());
 
-            final boolean[] mapperFound = {false};
+            final boolean[] mapperFound = { false };
 
             eachMapper(config, mapper -> {
                 if (!mapperFound[0]) {
@@ -121,7 +130,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
                 log.info("Generate mapper class [{}].", mapper);
                 argGenXml.setMapperClass(mapper);
-                argGenXml.setMapperXmlEls(getMapperXmlEls(mapper));
+                argGenXml.setMapperXmlEls(getMapperXmlEls(customXmlEls, mapper));
 
                 val bytesMapper = genMapperXml(argGenXml);
 
@@ -311,24 +320,46 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
     @SneakyThrows
     XmlContentProvider newProvider(final MapperXmlEl el) {
-        return el.contentProvider().newInstance();
+        return el.contentProvider().getDeclaredConstructor().newInstance();
     }
 
-    List<MapperXmlEl> getMapperXmlEls(final Class<?> clazz) {
-        val interfaces = new LinkedHashSet<Class<?>>(8);
-        getAllInterfaces(interfaces, clazz);
-        val mapperXmlElsRtn = new ArrayList<MapperXmlEl>(16);
+    List<MapperXmlEl> getCustomXmlEls() {
+        if (CollectionUtils.isEmpty(customizers)) {
+            return Collections.emptyList();
+        }
+
+        val interfaces = new LinkedHashSet<Class<?>>(16);
+        customizers.forEach(bean -> getAllInterfaces(interfaces, AopProxyUtils.ultimateTargetClass(bean)));
+
+        val xmlEls = new ArrayList<MapperXmlEl>(16);
 
         for (val it : interfaces) {
-            for (val mapperXmlEl : it.getAnnotationsByType(MapperXmlEl.class)) {
-                mapperXmlElsRtn.add(mapperXmlEl);
+            for (val xmlEl : it.getAnnotationsByType(MapperXmlEl.class)) {
+                xmlEls.add(xmlEl);
             }
         }
 
-        val setEls = new HashSet<String>(mapperXmlElsRtn.size());
-        mapperXmlElsRtn.removeIf(e -> !setEls.add(e.tag() + e.id()));
+        val setEls = new HashSet<String>(xmlEls.size());
+        xmlEls.removeIf(e -> !setEls.add(e.tag() + e.id()));
 
-        return mapperXmlElsRtn;
+        return xmlEls;
+    }
+
+    List<MapperXmlEl> getMapperXmlEls(final List<MapperXmlEl> customXmlEls, final Class<?> clazz) {
+        val interfaces = new LinkedHashSet<Class<?>>(8);
+        getAllInterfaces(interfaces, clazz);
+        val xmlEls = new ArrayList<>(customXmlEls);
+
+        for (val it : interfaces) {
+            for (val xmlEl : it.getAnnotationsByType(MapperXmlEl.class)) {
+                xmlEls.add(xmlEl);
+            }
+        }
+
+        val setEls = new HashSet<String>(xmlEls.size());
+        xmlEls.removeIf(e -> !setEls.add(e.tag() + e.id()));
+
+        return xmlEls;
     }
 
     void getAllInterfaces(final Set<Class<?>> interfaces, final Class<?> clazz) {
@@ -374,12 +405,13 @@ public class TigonMyBatisConfiguration implements InitializingBean {
         if (contentProvider != MapperXmlEl.EmptyProvider.class) {
             val content = newProvider(element).content(arg);
 
-            if (content.isText()) {
-                el.setTextContent(content.getContent());
+            val textNode = content.getContent();
+            if (StringUtils.hasText(textNode)) {
+                el.setTextContent(textNode);
                 return el;
             }
 
-            content.getElements().forEach(el::appendChild);
+            content.getNodes().forEach(el::appendChild);
             return el;
         }
 
