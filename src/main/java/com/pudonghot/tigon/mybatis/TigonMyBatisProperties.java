@@ -15,6 +15,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ToString
 @ConfigurationProperties("tigon.mybatis")
 public class TigonMyBatisProperties implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     /**
      * startup check config
      */

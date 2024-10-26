@@ -2,19 +2,18 @@ package com.pudonghot.tigon.mybatis;
 
 import lombok.*;
 import java.util.*;
-
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 import java.io.InputStream;
 import org.w3c.dom.Document;
 import lombok.extern.slf4j.Slf4j;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.stream.Collectors;
 import javax.xml.transform.OutputKeys;
 import org.apache.ibatis.parsing.XNode;
 import javax.xml.transform.dom.DOMSource;
+import org.springframework.util.StringUtils;
 import org.springframework.core.io.Resource;
 import org.apache.ibatis.parsing.XPathParser;
 import javax.xml.transform.TransformerFactory;
@@ -25,9 +24,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.ibatis.mapping.SqlCommandType;
 import com.pudonghot.tigon.mybatis.util.StrUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 import com.pudonghot.tigon.mybatis.util.AssertUtils;
 import com.pudonghot.tigon.mybatis.xmlgen.XmlGenArg;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.reflection.SystemMetaObject;
 import org.springframework.context.ApplicationContext;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -55,6 +54,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @Slf4j
 @EnableConfigurationProperties({ TigonMyBatisProperties.class })
 public class TigonMyBatisConfiguration implements InitializingBean {
+
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired(required = false)
@@ -66,6 +66,8 @@ public class TigonMyBatisConfiguration implements InitializingBean {
      */
     @Autowired(required = false)
     private SuperMapper<?>[] mappers;
+    @Getter
+    private final Map<Class<SuperMapper<?>>, String> tables = new HashMap<>();
     @Getter
     @Autowired
     private TigonMyBatisProperties properties;
@@ -179,24 +181,26 @@ public class TigonMyBatisConfiguration implements InitializingBean {
             });
         }
 
-        if (properties.isStartupCheck() && mappers != null && mappers.length > 0) {
-            log.info("Startup check is on, run database table check.");
-            val search = new Search().limit(1);
-            for (val mapper : mappers) {
-                val mapperInterfaces = mapper.getClass().getInterfaces();
-                if (mapper instanceof BaseQueryMapper) {
-                    log.info("Mapper [{}] is instance of BaseQueryMapper, run #list to check database table.", mapperInterfaces);
-                    ((BaseQueryMapper) mapper).list(search);
-                }
-                else {
-                    log.debug("Mapper [{}] is not instance of BaseQueryMapper, ignore.", mapperInterfaces);
+        // add get table proxy
+        if (mappers != null && mappers.length > 0) {
+            if (properties.isStartupCheck()) {
+                log.info("Startup check is on, run database table check.");
+                val search = Search.of().limit(1);
+                for (val mapper : mappers) {
+                    val mapperInterfaces = mapper.getClass().getInterfaces();
+                    if (mapper instanceof BaseQueryMapper) {
+                        log.info("Mapper [{}] is instance of BaseQueryMapper, run #list to check database table.", mapperInterfaces);
+                        ((BaseQueryMapper) mapper).list(search);
+                    }
+                    else {
+                        log.debug("Mapper [{}] is not instance of BaseQueryMapper, ignore.", mapperInterfaces);
+                    }
                 }
             }
         }
 
         applicationContext.publishEvent(
-            new TigonMyBatisReadyEvent(applicationContext));
-
+            new TigonMyBatisReadyEvent(applicationContext, this));
     }
 
     /**
@@ -216,19 +220,20 @@ public class TigonMyBatisConfiguration implements InitializingBean {
     }
 
     byte[] genMapperXml(final ArgGenXml argGenXml) {
-
         val mapperClass = argGenXml.getMapperClass();
+
         val doc = genDocument(argGenXml);
         val xPathParser = new XPathParser(
                 doc, true, null, argGenXml.getXmlMapperEntityResolver());
 
-        val configuration = argGenXml.getConfiguration();
-        val sqlFragments = configuration.getSqlFragments();
-        val namespacePrefix = mapperClass.getName() + ".";
-        val xmlProcessArg = new XmlGenArg(argGenXml.getBeanFactory(),
-                xPathParser, doc, mapperClass);
-        val docEl = doc.getDocumentElement();
+        val beanFactory = argGenXml.getBeanFactory();
+        val xmlProcessArg = new XmlGenArg(beanFactory, xPathParser, doc, mapperClass);
+        tables.put(mapperClass, beanFactory.resolveEmbeddedValue(xmlProcessArg.getTable()));
 
+        val configuration = argGenXml.getConfiguration();
+        val namespacePrefix = mapperClass.getName() + ".";
+        val sqlFragments = configuration.getSqlFragments();
+        val docEl = doc.getDocumentElement();
         boolean updated = false;
 
         for (val element : argGenXml.getMapperXmlEls()) {

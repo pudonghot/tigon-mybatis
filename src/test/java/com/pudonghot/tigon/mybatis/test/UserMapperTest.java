@@ -1,7 +1,5 @@
 package com.pudonghot.tigon.mybatis.test;
 
-import com.pudonghot.tigon.mybatis.Search;
-import com.pudonghot.tigon.mybatis.mapper.UserMapper;
 import lombok.val;
 import java.util.*;
 import lombok.var;
@@ -10,11 +8,13 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
-import com.pudonghot.tigon.mybatis.TestDriver;
-import com.pudonghot.tigon.mybatis.entity.User;
+import com.pudonghot.tigon.mybatis.Search;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import com.pudonghot.tigon.mybatis.TestDriver;
+import com.pudonghot.tigon.mybatis.entity.User;
 import org.apache.commons.lang3.RandomStringUtils;
+import com.pudonghot.tigon.mybatis.mapper.UserMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -35,10 +35,11 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
 
     @Before
     public void setup() {
+        Assert.state("tb_user".equals(mapper.getTable()), "Table name assert failed");
 
         val userList = new ArrayList<User>(10);
 
-        // birth date from 1980 to 2000
+        // birthdate from 1980 to 2000
         val dateFrom = Calendar.getInstance();
         dateFrom.set(1980, 1, 1, 0, 0);
         val dateTo = Calendar.getInstance();

@@ -1,5 +1,8 @@
 package com.pudonghot.tigon.mybatis;
 
+import lombok.val;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
 import com.pudonghot.tigon.mybatis.xmlgen.contentprovider.ColsXmlContentProvider;
 import com.pudonghot.tigon.mybatis.xmlgen.contentprovider.TableXmlContentProvider;
@@ -21,4 +24,22 @@ public interface SuperMapper<Enity> {
     String PARAM_COL_KEY = "__col__";
     String PARAM_COLS_KEY = "__cols__";
     String PARAM_VAL_KEY = "__val__";
+
+    /**
+     * get mapper table name
+     *
+     * @return table name
+     */
+    default String getTable() {
+        val interfaces = getClass().getInterfaces();
+        for (val mapperInterface : interfaces) {
+            if (SuperMapper.class.isAssignableFrom(mapperInterface)) {
+                return TigonMyBatisConfiguration.getStaticInstance().getTables().get(mapperInterface);
+            }
+        }
+
+        throw new IllegalStateException("No table got from mapper ["
+                + Arrays.asList(interfaces).stream().map(Class::getName).collect(Collectors.joining(", "))
+                + "]");
+    }
 }

@@ -1,8 +1,8 @@
 package com.pudonghot.tigon.mybatis.xmlgen.contentprovider;
 
-import com.pudonghot.tigon.mybatis.xmlgen.XmlGenArg;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import com.pudonghot.tigon.mybatis.xmlgen.XmlGenArg;
 import com.pudonghot.tigon.mybatis.util.EntityUtils;
 
 /**
