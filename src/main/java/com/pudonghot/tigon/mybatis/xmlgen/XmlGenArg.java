@@ -38,7 +38,7 @@ public class XmlGenArg {
         this.entityClass =
             GenericTypeResolver.resolveTypeArguments(
                 mapperClass, SuperMapper.class)[0];
-        this.table = table();
+        table = beanFactory.resolveEmbeddedValue(table());
         log.info("Entity [{}] mapper [{}] table [{}] found.", entityClass, mapperClass, table);
     }
 

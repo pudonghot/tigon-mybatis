@@ -228,7 +228,7 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
         val beanFactory = argGenXml.getBeanFactory();
         val xmlProcessArg = new XmlGenArg(beanFactory, xPathParser, doc, mapperClass);
-        tables.put(mapperClass, beanFactory.resolveEmbeddedValue(xmlProcessArg.getTable()));
+        tables.put(mapperClass, xmlProcessArg.getTable());
 
         val configuration = argGenXml.getConfiguration();
         val namespacePrefix = mapperClass.getName() + ".";
