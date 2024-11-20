@@ -14,20 +14,23 @@ public interface BaseInsertMapper<Entity> extends SuperMapper<Entity> {
 
     /**
      * insert entity
+     *
      * @param entity entity
      * @return insert result
      */
     int insert(@Param(PARAM_MODEL_KEY) Entity entity);
 
     /**
-     * insert model
+     * insert entities
+     *
      * @param entities entities
      * @return insert result
      */
     int insert(@Param(PARAM_MODELS_KEY) Collection<Entity> entities);
 
     /**
-     * insert model
+     * insert entities
+     *
      * @param entities entities
      * @return insert result
      */

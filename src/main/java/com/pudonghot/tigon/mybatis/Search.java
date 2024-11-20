@@ -557,6 +557,7 @@ public class Search implements Serializable {
         if (StrUtils.isBlank(search.table)) {
             search.table = table;
         }
+
         criteria.add(new Criterion(AND, search));
         eachSearch(searches, this::and);
 
@@ -573,6 +574,7 @@ public class Search implements Serializable {
         if (StrUtils.isBlank(search.table)) {
             search.table = table;
         }
+
         criteria.add(new Criterion(OR, search));
         eachSearch(searches, this::or);
 
@@ -637,7 +639,7 @@ public class Search implements Serializable {
      * @return this
      */
     public Search orderBy(final String col, final Order order) {
-        orders.put(ProcArg.col(table, col), order.name());
+        orders.put(col, order.name());
         return this;
     }
 
@@ -649,7 +651,7 @@ public class Search implements Serializable {
      * @return this
      */
     public Search orderBy(final String col, final Collection<?> values) {
-        orders.put(ProcArg.col(table, col), values);
+        orders.put(col, values);
         return this;
     }
 
@@ -697,7 +699,14 @@ public class Search implements Serializable {
      * @return orders
      */
     public Map<String, Object> orders() {
-        return orders;
+
+        if (orders.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        val ordersRtn = new HashMap<String, Object>();
+        orders.forEach((k, v) -> ordersRtn.put(ProcArg.col(table, k), v));
+        return ordersRtn;
     }
 
     /**
@@ -885,6 +894,7 @@ public class Search implements Serializable {
             result.add(0, SqlParam.rawVal("("));
             result.add(SqlParam.rawVal(")"));
         }
+
         return result;
     }
 

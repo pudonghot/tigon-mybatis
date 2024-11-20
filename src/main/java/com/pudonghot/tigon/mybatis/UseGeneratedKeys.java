@@ -18,4 +18,17 @@ public @interface UseGeneratedKeys {
      * @return keyProperty
      */
     String[] value() default {};
+
+    /**
+     * entity props
+     *
+     * @return props
+     */
+    String[] props() default {};
+
+    /**
+     * table cols
+     * @return cols
+     */
+    String[] cols() default {};
 }

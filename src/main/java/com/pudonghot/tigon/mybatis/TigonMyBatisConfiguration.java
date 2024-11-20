@@ -18,11 +18,9 @@ import org.springframework.core.io.Resource;
 import org.apache.ibatis.parsing.XPathParser;
 import javax.xml.transform.TransformerFactory;
 import org.springframework.util.CollectionUtils;
-import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.ibatis.mapping.SqlCommandType;
 import com.pudonghot.tigon.mybatis.util.StrUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import com.pudonghot.tigon.mybatis.util.AssertUtils;
@@ -34,7 +32,6 @@ import org.springframework.aop.framework.AopProxyUtils;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.springframework.beans.factory.InitializingBean;
 import com.pudonghot.tigon.mybatis.xmlgen.XmlGenCustomizer;
-import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,24 +154,10 @@ public class TigonMyBatisConfiguration implements InitializingBean {
                 for (val msName : config.getMappedStatementNames()) {
                     if (msName.startsWith(mapperPrefix)) {
                         val mappedStatement = config.getMappedStatement(msName);
-                        MetaObject msmo = null;
-
                         // add cache
                         if (config.hasCache(mapperName) && mappedStatement.getCache() == null) {
-                            (msmo = SystemMetaObject.forObject(mappedStatement))
-                                    .setValue("cache", config.getCache(mapperName));
-                        }
-
-                        // JDBC3 Key Gen, For multiple keys generate
-                        val keygen = mappedStatement.getKeyGenerator();
-                        if (mappedStatement.getSqlCommandType() == SqlCommandType.INSERT &&
-                                msName.equals(mapperPrefix + "insert") &&
-                                keygen instanceof Jdbc3KeyGenerator) {
-                            log.info("Replace JDBC3 key generator.");
-                            if (msmo == null) {
-                                msmo = SystemMetaObject.forObject(mappedStatement);
-                            }
-                            msmo.setValue(Jdbc3KeyGen.MS_KEY_GEN_FIELD, Jdbc3KeyGen.OBJECT);
+                            SystemMetaObject.forObject(mappedStatement)
+                                .setValue("cache", config.getCache(mapperName));
                         }
                     }
                 }
@@ -398,10 +381,28 @@ public class TigonMyBatisConfiguration implements InitializingBean {
 
             if (ugkAnnotation != null) {
                 el.setAttribute("useGeneratedKeys", "true");
-                val keyProps = ugkAnnotation.value();
-                if (keyProps != null && keyProps.length > 0) {
-                    el.setAttribute("keyProperty", Arrays.stream(keyProps).collect(Collectors.joining(",")));
+
+                String keyProp = "id";
+                String keyCol = "id";
+                val valueCfg = ugkAnnotation.value();
+                if (valueCfg != null && valueCfg.length > 0) {
+                    val txt = Arrays.stream(valueCfg).collect(Collectors.joining(","));
+                    keyProp = txt;
+                    keyCol = txt;
                 }
+
+                val keyPropCfg = ugkAnnotation.props();
+                if (keyPropCfg != null && keyPropCfg.length > 0) {
+                    keyProp = Arrays.stream(keyPropCfg).collect(Collectors.joining(","));
+                }
+
+                val keyColCfg = ugkAnnotation.cols();
+                if (keyColCfg != null && keyColCfg.length > 0) {
+                    keyCol = Arrays.stream(keyColCfg).collect(Collectors.joining(","));
+                }
+
+                el.setAttribute("keyProperty", keyProp);
+                el.setAttribute("keyColumn", keyCol);
             }
         }
 

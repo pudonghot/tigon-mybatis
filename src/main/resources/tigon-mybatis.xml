@@ -34,7 +34,7 @@
 
     <!-- Order By -->
     <sql id="orderBy">
-        <if test="!__search__.orders().isEmpty()">
+        <if test="__search__.hasOrder()">
             order by
             <foreach collection="__search__.orders()" index="__col__"
                      item="__direction__" separator=", ">
@@ -223,7 +223,7 @@
             from (select <include refid="listCols" />,
             row_number() over (
             <choose>
-                <when test="!__search__.orders().isEmpty()">
+                <when test="__search__.hasOrder()">
                     <include refid="Tigon.orderBy" />
                 </when>
                 <otherwise>
