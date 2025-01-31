@@ -18,12 +18,12 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 
-        <spring.version>6.1.2</spring.version>
-        <spring-boot.version>3.3.3</spring-boot.version>
-        <mybatis.version>3.5.16</mybatis.version>
+        <spring.version>6.1.16</spring.version>
+        <spring-boot.version>3.3.8</spring-boot.version>
+        <mybatis.version>3.5.19</mybatis.version>
         <mybatis-spring.version>3.0.4</mybatis-spring.version>
 
-        <revision>1.0.0-SNAPSHOT</revision>
+        <revision>1.0.0</revision>
     </properties>
 
     <url>https://gitee.com/chyxion/tigon-mybatis</url>
@@ -249,10 +249,10 @@
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.4.0</version>
+                    <version>0.7.0</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <publishingServerId>ossrh</publishingServerId>
+                        <publishingServerId>releases</publishingServerId>
                         <tokenAuth>true</tokenAuth>
                         <autoPublish>true</autoPublish>
                     </configuration>
