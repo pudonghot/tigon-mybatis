@@ -1,13 +1,12 @@
 package com.pudonghot.tigon.mybatis.util;
 
-import com.pudonghot.tigon.mybatis.*;
 import lombok.val;
 import java.util.*;
 import java.lang.reflect.Field;
 import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Modifier;
-import com.pudonghot.tigon.mybatis.*;
 import java.util.stream.Collectors;
+import com.pudonghot.tigon.mybatis.*;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 

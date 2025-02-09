@@ -6,8 +6,11 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import lombok.EqualsAndHashCode;
 import java.util.function.Consumer;
+import com.pudonghot.tigon.mybatis.util.FnGetter;
 import com.pudonghot.tigon.mybatis.util.StrUtils;
+import com.pudonghot.tigon.mybatis.util.EntityUtils;
 import static com.pudonghot.tigon.mybatis.Criterion.Type.*;
+import static com.pudonghot.tigon.mybatis.util.FnGetterUtils.getFieldName;
 
 /**
  * @author Donghuang
@@ -120,6 +123,16 @@ public class Search implements Serializable {
     }
 
     /**
+     * construct by eq
+     *
+     * @param field field
+     * @param value value
+     */
+    public static <T, R> Search of(final FnGetter<T, R> field, final R value) {
+        return of(getFieldName(field), value);
+    }
+
+    /**
      * construct by in
      *
      * @param col col name
@@ -127,6 +140,16 @@ public class Search implements Serializable {
      */
     public static Search of(final String col, final Collection<?> values) {
         return new Search(col, values);
+    }
+
+    /**
+     * construct by in
+     *
+     * @param field field
+     * @param values in values
+     */
+    public static <T, R> Search of(final FnGetter<T, R> field, final Collection<R> values) {
+        return of(getFieldName(field), values);
     }
 
     /**
@@ -140,20 +163,33 @@ public class Search implements Serializable {
     }
 
     /**
+     * construct by in
+     *
+     * @param field field
+     * @param values in values
+     */
+    public static <T, R> Search of(final FnGetter<T, R> field, final R[] values) {
+        return of(getFieldName(field), values);
+    }
+
+    /**
      * default construct
      */
     public Search() {
     }
 
     /**
+     * construct by id eq
+     *
      * @param value id value
      */
     public Search(final Object value) {
-        this("id", value);
+        this(EntityUtils.ID, value);
     }
 
     /**
      * construct by eq
+     *
      * @param col col name
      * @param value value
      */
@@ -163,11 +199,32 @@ public class Search implements Serializable {
 
     /**
      * construct by eq
+     *
+     * @param field field
+     * @param value value
+     */
+    public <T, R> Search(final FnGetter<T, R> field, final R value) {
+        this(getFieldName(field), value);
+    }
+
+    /**
+     * construct by in
+     *
      * @param col col name
      * @param values values
      */
     public Search(final String col, final Collection<?> values) {
         in(col, values);
+    }
+
+    /**
+     * construct by in
+     *
+     * @param field field
+     * @param values values
+     */
+    public <T, R> Search(final FnGetter<T, R> field, final Collection<R> values) {
+        this(getFieldName(field), values);
     }
 
     /**
@@ -178,6 +235,16 @@ public class Search implements Serializable {
      */
     public Search(final String col, final Object[] values) {
         in(col, values);
+    }
+
+    /**
+     * construct by in
+     *
+     * @param field field
+     * @param values values
+     */
+    public <T, R> Search(final FnGetter<T, R> field, final R[] values) {
+        this(getFieldName(field), values);
     }
 
     /**
@@ -234,210 +301,14 @@ public class Search implements Serializable {
     }
 
     /**
-     * col is null
+     * field eq
      *
-     * @param col col name
-     * @return this
-     */
-    public Search isNull(final String col) {
-        criteria.add(new Criterion(IS_NULL, col, Collections.emptyList()));
-        return this;
-    }
-
-    /**
-     * col is true
-     *
-     * @param col col name
-     * @return this
-     */
-    public Search isTrue(final String col) {
-        return eq(col, Boolean.TRUE);
-    }
-
-    /**
-     * col is false
-     *
-     * @param col col name
-     * @return this
-     */
-    public Search isFalse(final String col) {
-        return eq(col, Boolean.FALSE);
-    }
-
-    /**
-     * col in values array
-     *
-     * @param col col name
-     * @param values values
-     * @return this
-     */
-    public Search in(final String col, final Object[] values) {
-        criteria.add(new Criterion(IN, col, values));
-        return this;
-    }
-
-    /**
-     * col in values list
-     *
-     * @param col col name
-     * @param values values
-     * @return this
-     */
-    public Search in(final String col, final Collection<?> values) {
-        criteria.add(new Criterion(IN, col, values));
-        return this;
-    }
-
-    /**
-     * col like value
-     *
-     * @param col col name
+     * @param field field
      * @param value value
      * @return this
      */
-    public Search like(final String col, final String value) {
-        criteria.add(new Criterion(LIKE, col, value));
-        return this;
-    }
-
-    /**
-     * col like value
-     *
-     * @param col col name
-     * @param value value
-     * @param wrapValue wrap value with %
-     * @return this
-     */
-    public Search like(final String col, final String value, final boolean wrapValue) {
-        return like(col, wrapValue ? "%" + value + "%" : value);
-    }
-
-    /**
-     * col not like value
-     *
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search notLike(final String col, final String value) {
-        criteria.add(new Criterion(NOT_LIKE, col, value));
-        return this;
-    }
-
-    /**
-     * col not like value
-     *
-     * @param col col name
-     * @param value value
-     * @param wrapValue wrap value with %
-     * @return this
-     */
-    public Search notLike(final String col, final String value, final boolean wrapValue) {
-        return notLike(col, wrapValue ? "%" + value + "%" : value);
-    }
-
-    /**
-     * col contains value
-     *
-     * @see #like
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search contains(final String col, final String value) {
-        return like(col, value, true);
-    }
-
-    /**
-     * col not contains value
-     *
-     * @see #notLike
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search notContains(final String col, final String value) {
-        return notLike(col, value, true);
-    }
-
-    /**
-     * col starts with value
-     *
-     * @see #like
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search startsWith(final String col, final String value) {
-        return like(col, value + "%");
-    }
-
-    /**
-     * col not starts with value
-     *
-     * @see #notLike
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search notStartsWith(final String col, final String value) {
-        return notLike(col, value + "%");
-    }
-
-    /**
-     * col ends with value
-     *
-     * @see #like(String, String)
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search endsWith(final String col, final String value) {
-        return like(col, "%" + value);
-    }
-
-    /**
-     * col not ends with value
-     *
-     * @see #notLike(String, String)
-     * @param col col name
-     * @param value value
-     * @return this
-     */
-    public Search notEndsWith(final String col, final String value) {
-        return notLike(col, "%" + value);
-    }
-
-    /**
-     * col between value1 and value2
-     *
-     * @param col col name
-     * @param bottom bottom value
-     * @param top top value
-     * @return this
-     */
-    public Search between(final String col, final Object bottom, final Object top) {
-        criteria.add(new Criterion(
-            BETWEEN,
-            col,
-            Arrays.asList(bottom, top)));
-        return this;
-    }
-
-    /**
-     * col not between value1 and value2
-     *
-     * @param col col name
-     * @param bottom bottom value
-     * @param top top value
-     * @return this
-     */
-    public Search notBetween(final String col, final Object bottom, final Object top) {
-        criteria.add(new Criterion(
-            NOT_BETWEEN,
-            col,
-            Arrays.asList(bottom, top)));
-        return this;
+    public <T, R> Search eq(final FnGetter<T, R> field, final R value) {
+        return eq(getFieldName(field), value);
     }
 
     /**
@@ -466,6 +337,38 @@ public class Search implements Serializable {
     }
 
     /**
+     * field not eq value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search ne(final FnGetter<T, R> field, final R value) {
+        return ne(getFieldName(field), value);
+    }
+
+    /**
+     * col is null
+     *
+     * @param col col name
+     * @return this
+     */
+    public Search isNull(final String col) {
+        criteria.add(new Criterion(IS_NULL, col, Collections.emptyList()));
+        return this;
+    }
+
+    /**
+     * field is null
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search isNull(final FnGetter<T, R> field) {
+        return isNull(getFieldName(field));
+    }
+
+    /**
      * col is not null
      *
      * @param col col
@@ -477,6 +380,102 @@ public class Search implements Serializable {
     }
 
     /**
+     * field is not null
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search notNull(final FnGetter<T, R> field) {
+        return notNull(getFieldName(field));
+    }
+
+    /**
+     * col is true
+     *
+     * @param col col name
+     * @return this
+     */
+    public Search isTrue(final String col) {
+        return eq(col, Boolean.TRUE);
+    }
+
+    /**
+     * field is true
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search isTrue(final FnGetter<T, R> field) {
+        return isTrue(getFieldName(field));
+    }
+
+    /**
+     * col is false
+     *
+     * @param col col name
+     * @return this
+     */
+    public Search isFalse(final String col) {
+        return eq(col, Boolean.FALSE);
+    }
+
+    /**
+     * field is false
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search isFalse(final FnGetter<T, R> field) {
+        return isFalse(getFieldName(field));
+    }
+
+    /**
+     * col in values array
+     *
+     * @param col col name
+     * @param values values
+     * @return this
+     */
+    public Search in(final String col, final Object[] values) {
+        criteria.add(new Criterion(IN, col, values));
+        return this;
+    }
+
+    /**
+     * field in values array
+     *
+     * @param field field
+     * @param values values
+     * @return this
+     */
+    public <T, R> Search in(final FnGetter<T, R> field, final R[] values) {
+        return in(getFieldName(field), values);
+    }
+
+    /**
+     * col in values collection
+     *
+     * @param col col name
+     * @param values values
+     * @return this
+     */
+    public Search in(final String col, final Collection<?> values) {
+        criteria.add(new Criterion(IN, col, values));
+        return this;
+    }
+
+    /**
+     * field in values collection
+     *
+     * @param field field
+     * @param values values
+     * @return this
+     */
+    public <T, R> Search in(final FnGetter<T, R> field, final Collection<R> values) {
+        return in(getFieldName(field), values);
+    }
+
+    /**
      * col is not in values
      *
      * @param col col name
@@ -485,6 +484,17 @@ public class Search implements Serializable {
      */
     public Search notIn(final String col, final Object[] values) {
         return notIn(col, Arrays.asList(values));
+    }
+
+    /**
+     * field not in values
+     *
+     * @param field field
+     * @param values values
+     * @return this
+     */
+    public <T, R> Search notIn(final FnGetter<T, R> field, final R[] values) {
+        return notIn(getFieldName(field), values);
     }
 
     /**
@@ -500,6 +510,311 @@ public class Search implements Serializable {
     }
 
     /**
+     * field not in values collection
+     *
+     * @param field field
+     * @param values values
+     * @return this
+     */
+    public <T, R> Search notIn(final FnGetter<T, R> field, final Collection<R> values) {
+        return notIn(getFieldName(field), values);
+    }
+
+    /**
+     * col like value
+     *
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search like(final String col, final String value) {
+        criteria.add(new Criterion(LIKE, col, value));
+        return this;
+    }
+
+    /**
+     * field like value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search like(final FnGetter<T, R> field, final String value) {
+        return like(getFieldName(field), value);
+    }
+
+    /**
+     * col like value
+     *
+     * @param col col name
+     * @param value value
+     * @param wrapValue wrap value with %
+     * @return this
+     */
+    public Search like(final String col, final String value, final boolean wrapValue) {
+        return like(col, wrapValue ? "%" + value + "%" : value);
+    }
+
+    /**
+     * field like value
+     *
+     * @param field field
+     * @param value value
+     * @param wrapValue wrap value with %
+     * @return this
+     */
+    public <T, R extends String> Search like(final FnGetter<T, R> field, final String value, final boolean wrapValue) {
+        return like(getFieldName(field), value, wrapValue);
+    }
+
+    /**
+     * col not like value
+     *
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search notLike(final String col, final String value) {
+        criteria.add(new Criterion(NOT_LIKE, col, value));
+        return this;
+    }
+
+    /**
+     * field not like value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search notLike(final FnGetter<T, R> field, final String value) {
+        return notLike(getFieldName(field), value);
+    }
+
+    /**
+     * col not like value
+     *
+     * @param col col name
+     * @param value value
+     * @param wrapValue wrap value with %
+     * @return this
+     */
+    public Search notLike(final String col, final String value, final boolean wrapValue) {
+        return notLike(col, wrapValue ? "%" + value + "%" : value);
+    }
+
+    /**
+     * field not like value
+     *
+     * @param field field
+     * @param value value
+     * @param wrapValue wrap value with %
+     * @return this
+     */
+    public <T, R extends String> Search notLike(final FnGetter<T, R> field, final String value, final boolean wrapValue) {
+        return notLike(getFieldName(field), value, wrapValue);
+    }
+
+    /**
+     * col contains value
+     *
+     * @see #like
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search contains(final String col, final String value) {
+        return like(col, value, true);
+    }
+
+    /**
+     * field contains value
+     *
+     * @see #like
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search contains(final FnGetter<T, R> field, final String value) {
+        return contains(getFieldName(field), value);
+    }
+
+    /**
+     * col not contains value
+     *
+     * @see #notLike
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search notContains(final String col, final String value) {
+        return notLike(col, value, true);
+    }
+
+    /**
+     * field not contains value
+     *
+     * @see #notLike
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search notContains(final FnGetter<T, R> field, final String value) {
+        return notContains(getFieldName(field), value);
+    }
+
+    /**
+     * col starts with value
+     *
+     * @see #like
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search startsWith(final String col, final String value) {
+        return like(col, value + "%");
+    }
+
+    /**
+     * field starts with value
+     *
+     * @see #like
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search startsWith(final FnGetter<T, R> field, final String value) {
+        return startsWith(getFieldName(field), value);
+    }
+
+    /**
+     * col not starts with value
+     *
+     * @see #notLike
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search notStartsWith(final String col, final String value) {
+        return notLike(col, value + "%");
+    }
+
+    /**
+     * field not starts with value
+     *
+     * @see #notLike
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search notStartsWith(final FnGetter<T, R> field, final String value) {
+        return notStartsWith(getFieldName(field), value);
+    }
+
+    /**
+     * col ends with value
+     *
+     * @see #like(String, String)
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search endsWith(final String col, final String value) {
+        return like(col, "%" + value);
+    }
+
+    /**
+     * field ends with value
+     *
+     * @see #like
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search endsWith(final FnGetter<T, R> field, final String value) {
+        return endsWith(getFieldName(field), value);
+    }
+
+    /**
+     * col not ends with value
+     *
+     * @see #notLike(String, String)
+     * @param col col name
+     * @param value value
+     * @return this
+     */
+    public Search notEndsWith(final String col, final String value) {
+        return notLike(col, "%" + value);
+    }
+
+    /**
+     * field not ends with value
+     *
+     * @see #like
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R extends String> Search notEndsWith(final FnGetter<T, R> field, final String value) {
+        return notEndsWith(getFieldName(field), value);
+    }
+
+    /**
+     * col between bottom and top
+     *
+     * @param col col name
+     * @param bottom bottom value
+     * @param top top value
+     * @return this
+     */
+    public Search between(final String col, final Object bottom, final Object top) {
+        criteria.add(new Criterion(
+            BETWEEN,
+            col,
+            Arrays.asList(bottom, top)));
+        return this;
+    }
+
+    /**
+     * field between bottom and top
+     *
+     * @param field field
+     * @param bottom bottom value
+     * @param top top value
+     * @return this
+     */
+    public <T, R> Search between(final FnGetter<T, R> field, final R bottom, final R top) {
+        return between(getFieldName(field), bottom, top);
+    }
+
+    /**
+     * col not between bottom and top
+     *
+     * @param col col name
+     * @param bottom bottom value
+     * @param top top value
+     * @return this
+     */
+    public Search notBetween(final String col, final Object bottom, final Object top) {
+        criteria.add(new Criterion(
+            NOT_BETWEEN,
+            col,
+            Arrays.asList(bottom, top)));
+        return this;
+    }
+
+    /**
+     * field not between bottom and top
+     *
+     * @param field field
+     * @param bottom bottom value
+     * @param top top value
+     * @return this
+     */
+    public <T, R> Search notBetween(final FnGetter<T, R> field, final R bottom, final R top) {
+        return notBetween(getFieldName(field), bottom, top);
+    }
+
+    /**
      * col is less than value
      *
      * @param col col name
@@ -509,6 +824,17 @@ public class Search implements Serializable {
     public Search lt(final String col, final Object value) {
         criteria.add(new Criterion(LT, col, value));
         return this;
+    }
+
+    /**
+     * field is less than value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search lt(final FnGetter<T, R> field, final R value) {
+        return lt(getFieldName(field), value);
     }
 
     /**
@@ -524,6 +850,17 @@ public class Search implements Serializable {
     }
 
     /**
+     * field is less than value or equals value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search lte(final FnGetter<T, R> field, final R value) {
+        return lte(getFieldName(field), value);
+    }
+
+    /**
      * col is greater than value
      *
      * @param col col name
@@ -536,6 +873,17 @@ public class Search implements Serializable {
     }
 
     /**
+     * field is greater than value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search gt(final FnGetter<T, R> field, final R value) {
+        return gt(getFieldName(field), value);
+    }
+
+    /**
      * col is greater than value or equals value
      *
      * @param col col name
@@ -545,6 +893,17 @@ public class Search implements Serializable {
     public Search gte(final String col, final Object value) {
         criteria.add(new Criterion(GTE, col, value));
         return this;
+    }
+
+    /**
+     * col is greater than value or equals value
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search gte(final FnGetter<T, R> field, final R value) {
+        return gte(getFieldName(field), value);
     }
 
     /**
@@ -562,6 +921,28 @@ public class Search implements Serializable {
         eachSearch(searches, this::and);
 
         return this;
+    }
+
+    /**
+     * or col eq val
+     *
+     * @param col col
+     * @param value value
+     * @return this
+     */
+    public Search or(final String col, final Object value) {
+        return or(new Search(col, value).table(table));
+    }
+
+    /**
+     * or field eq val
+     *
+     * @param field field
+     * @param value value
+     * @return this
+     */
+    public <T, R> Search or(final FnGetter<T, R> field, final R value) {
+        return or(getFieldName(field), value);
     }
 
     /**
@@ -590,17 +971,6 @@ public class Search implements Serializable {
     }
 
     /**
-     * or col eq val
-     *
-     * @param col col
-     * @param value value
-     * @return this
-     */
-    public Search or(final String col, final Object value) {
-        return or(new Search(col, value).table(table));
-    }
-
-    /**
      * build custom search criterion
      *
      * @param builder criterion builder
@@ -622,6 +992,16 @@ public class Search implements Serializable {
     }
 
     /**
+     * order by field asc
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search asc(final FnGetter<T, R> field) {
+        return asc(getFieldName(field));
+    }
+
+    /**
      * order by col desc
      *
      * @param col col name
@@ -629,6 +1009,16 @@ public class Search implements Serializable {
      */
     public Search desc(final String col) {
         return orderBy(col, Order.DESC);
+    }
+
+    /**
+     * order by field desc
+     *
+     * @param field field
+     * @return this
+     */
+    public <T, R> Search desc(final FnGetter<T, R> field) {
+        return desc(getFieldName(field));
     }
 
     /**
@@ -644,7 +1034,18 @@ public class Search implements Serializable {
     }
 
     /**
-     * order by fields
+     * order by
+     *
+     * @param field field
+     * @param order order
+     * @return this
+     */
+    public <T, R> Search orderBy(final FnGetter<T, R> field, final Order order) {
+        return orderBy(getFieldName(field), order);
+    }
+
+    /**
+     * order by values, MySQL only
      *
      * @param col col name
      * @param values values
@@ -653,6 +1054,17 @@ public class Search implements Serializable {
     public Search orderBy(final String col, final Collection<?> values) {
         orders.put(col, values);
         return this;
+    }
+
+    /**
+     * order by values, MySQL only
+     *
+     * @param field field
+     * @param values values
+     * @return this
+     */
+    public <T, R> Search orderBy(final FnGetter<T, R> field, final Collection<R> values) {
+        return orderBy(getFieldName(field), values);
     }
 
     /**

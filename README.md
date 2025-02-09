@@ -4,9 +4,8 @@
 
 Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以下特点
 
-- 代码又少又壮(2000行左右)，绝不做多余的事情
-- 仅需Mapper继承接口，实现`增` `删` `改` `查`，无额外配置，爽到没女朋友
-- 用完即走，毫不留恋
+- 代码又少又壮，不做多余的事情
+- 仅需Mapper继承接口，实现`增` `删` `改` `查`，无额外配置，用完即走
 
 ### 开始使用
 
@@ -22,7 +21,7 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以
 
 ### 使用示例
 
-下面是使用示例，可以在源代码中找到更详细的[单元测试用例](core/src/test/java/me/chyxion/tigon/mybatis/test/UserMapperTest.java)
+下面是使用示例，可以在源代码中找到更详细的[单元测试用例](core/src/test/java/com/pudonghot/tigon/mybatis/test/UserMapperTest.java)
 
 ##### 定义Entity
 
@@ -35,13 +34,11 @@ import java.util.Date;
 import lombok.ToString;
 import java.io.Serializable;
 import com.pudonghot.tigon.mybatis.NotUpdate;
-import lombok.experimental.FieldNameConstants;
 import com.pudonghot.tigon.mybatis.NotUpdateWhenNull;
 
 @Getter
 @Setter
 @ToString
-@FieldNameConstants
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -130,9 +127,8 @@ mapper.insert(Arrays.asList(user1, user2));
 根据`ID`查询单个对象
 
 ```java
-val id = 1154;
 // 根据主键查询单条记录
-val user = mapper.find(id);
+val user = mapper.find(1154);
 ```
 
 根据属性查询单个对象
@@ -140,8 +136,8 @@ val user = mapper.find(id);
 ```java
 // 根据属性account, mobile查询单个对象
 val user = mapper.find(
-    Search.of(User.Fields.account, "donghuang")
-        .eq(User.Fields.mobile, "13764778899"));
+    Search.of(User::getAccount, "donghuang")
+        .eq(User::getMobile, "13764778899"));
 ```
 
 根据属性查询列表
@@ -151,12 +147,12 @@ val user = mapper.find(
 // 查询结果根据属性birthDate升序排序
 // 返回数据限制42条
 val users = mapper.list(
-    Search.of(User.Fields.gender, User.Gender.MALE)
-        .between(User.Fields.birthDate,
+    Search.of(User::getGender, User.Gender.MALE)
+        .between(User::getBirthDate,
             DateUtils.parseDate("1982-04-04"),
             DateUtils.parseDate("1994-04-04")
         )
-        .asc(User.Fields.birthDate)
+        .asc(User::getBirthDate)
         .limit(42)
     );
 ```
@@ -207,14 +203,14 @@ mapper.update(user);
 通过`Map<String, Object>`更新
 
 ```java
-val update = new HashMap<String, Object>(6);
-update.put(User.Fields.name, "东皇大叔");
-update.put(User.Fields.updatedBy, "SYS");
-update.put(User.Fields.updatedAt, new Date());
+val update = UpdateObj.of(User::getName, "东皇大叔"); 
+update.put(User::getName, "东皇大叔");
+update.put(User::getUpdatedBy, "SYS");
+update.put(User::getUpdatedAt, new Date());
 // 通过Map更新ID为1的记录
 mapper.update(update, 1);
 // 效果同上
-// mapper.update(update, Search.of(User.Fields.id, 1));
+// mapper.update(update, Search.of(User::getId, 1));
 // mapper.update(update, Search.of(1));
 ```
 
@@ -222,11 +218,11 @@ mapper.update(update, 1);
 
 ```java
 // 更新id为274229记录的属性列remark为null
-mapper.setNull(User.Fields.remark, 274229);
+mapper.setNull(User::getRemark, 274229);
 // 更新id为1154记录的属性列remark为null
-mapper.setNull(User.Fields.remark, Search.of(User.Fields.id, 1154));
+mapper.setNull(User::getRemark, Search.of(User::getId, 1154));
 // 更新全表的属性列remark为null，小心操作！！！
-mapper.setNull(User.Fields.remark, Search.of());
+mapper.setNull(User::getRemark, Search.of());
 ```
 
 ##### IV. 删除
@@ -242,7 +238,7 @@ mapper.delete(1);
 
 ```java
 // 根据属性ID删除记录
-mapper.delete(Search.of("id", 1));
+mapper.delete(Search.of(User::getId, 1));
 // 等同于 mapper.delete(1);
 ```
 
@@ -258,18 +254,10 @@ mapper.delete(Search.of("id", 1));
 
 ### 原理
 
-Tigon MyBatis并**不改变**MyBatis相关功能，所做的只是在程序**启动期间**检测业务Mapper接口，如果继承了相关`BaseMapper.java`，则注入相关方法`MappedStatement`，具体逻辑参见源码，超简单，超幼稚。
-
-### 代码阅读
-
-都看到这里了，动动小手clone工程，直接打开[UserMapperTest.java](core/src/test/java/me/chyxion/tigon/mybatis/test/UserMapperTest.java)右击调试运行，心事全都被你发现，代码写得烂的地方回来喷我，一定改。
+Tigon MyBatis并**不改变**MyBatis相关功能，所做的只是在程序**启动期间**检测业务Mapper接口，如果继承了相关`BaseMapper.java`，则注入相关方法`MappedStatement`，具体逻辑参见源码。
 
 ### 最后
 
 为什么要有这个项目，其实这些代码本人从2014年就陆续在写在用，在自己参与的一些项目里默默奉献。
-
-有想过开源，奈何一直忙着修福报，此外很重要的一点是，觉得方案并不完善，还是比较长比较臭。
-
-开源界已经有很多MyBatis相关的项目了，包括官方出品的`mybatis-dynamic-sql`，说实话，都挺恶心的。
 
 欢迎有兴趣的同学一起共建。
