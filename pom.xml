@@ -23,7 +23,7 @@
         <mybatis.version>3.5.19</mybatis.version>
         <mybatis-spring.version>3.0.4</mybatis-spring.version>
 
-        <revision>1.0.1-SNAPSHOT</revision>
+        <revision>1.0.1-RC1</revision>
     </properties>
 
     <url>https://gitee.com/chyxion/tigon-mybatis</url>

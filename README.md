@@ -15,7 +15,7 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以
 <dependency>
   <groupId>com.pudonghot.tigon</groupId>
   <artifactId>tigon-mybatis</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-RC1</version>
 </dependency>
 ```
 
@@ -258,6 +258,6 @@ Tigon MyBatis并**不改变**MyBatis相关功能，所做的只是在程序**启
 
 ### 最后
 
-为什么要有这个项目，其实这些代码本人从2014年就陆续在写在用，在自己参与的一些项目里默默奉献。
+为什么要有这个项目，这些代码本人从2014年就陆续在写在用，在作者参与的一些项目里默默奉献。
 
 欢迎有兴趣的同学一起共建。
