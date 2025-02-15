@@ -107,6 +107,7 @@ public class Search implements Serializable {
      * construct by eq
      *
      * @param value id value
+     * @return search
      */
     public static Search of(final Object value) {
         return new Search(value);
@@ -117,6 +118,7 @@ public class Search implements Serializable {
      *
      * @param col col name
      * @param value value
+     * @return search
      */
     public static Search of(final String col, final Object value) {
         return new Search(col, value);
@@ -127,6 +129,7 @@ public class Search implements Serializable {
      *
      * @param field field
      * @param value value
+     * @return search
      */
     public static <T, R> Search of(final FnGetter<T, R> field, final R value) {
         return of(getFieldName(field), value);
@@ -147,6 +150,7 @@ public class Search implements Serializable {
      *
      * @param field field
      * @param values in values
+     * @return search
      */
     public static <T, R> Search of(final FnGetter<T, R> field, final Collection<R> values) {
         return of(getFieldName(field), values);
@@ -157,6 +161,7 @@ public class Search implements Serializable {
      *
      * @param col col name
      * @param values in values
+     * @return search
      */
     public static Search of(final String col, final Object[] values) {
         return new Search(col, values);
@@ -167,9 +172,20 @@ public class Search implements Serializable {
      *
      * @param field field
      * @param values in values
+     * @return search
      */
     public static <T, R> Search of(final FnGetter<T, R> field, final R[] values) {
         return of(getFieldName(field), values);
+    }
+
+    /**
+     * construct by builder
+     *
+     * @param builder criterion builder
+     * @return search
+     */
+    public static Search of(final Consumer<ProcArg> builder) {
+        return of().build(builder);
     }
 
     /**

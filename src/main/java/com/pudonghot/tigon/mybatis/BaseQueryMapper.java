@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.ibatis.annotations.Param;
+import com.pudonghot.tigon.mybatis.util.FnGetter;
 import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
+import static com.pudonghot.tigon.mybatis.util.FnGetterUtils.getFieldName;
 
 /**
  * @author Donghuang
@@ -63,6 +65,17 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
     <T> T findCol(@Param(PARAM_COL_KEY) String col, @Param(PARAM_SEARCH_KEY) Search search);
 
     /**
+     * find col by search
+     *
+     * @param field select col
+     * @param search search
+     * @return col result
+     */
+    default <T, R> R findCol(final FnGetter<T, R> field, final Search search) {
+        return findCol(getFieldName(field), search);
+    }
+
+    /**
      * list by search
      *
      * @param search search
@@ -98,6 +111,17 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
      * @return list result or empty list
      */
     <T> List<T> listCol(@Param(PARAM_COL_KEY) String col, @Param(PARAM_SEARCH_KEY) Search search);
+
+    /**
+     * list col by search
+     *
+     * @param field select col
+     * @param search search
+     * @return col result
+     */
+    default <T, R> List<R> listCol(final FnGetter<T, R> field, final Search search) {
+        return listCol(getFieldName(field), search);
+    }
 
     /**
      * scan entities
