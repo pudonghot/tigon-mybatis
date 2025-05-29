@@ -1132,7 +1132,7 @@ public class Search implements Serializable {
             return Collections.emptyMap();
         }
 
-        val ordersRtn = new HashMap<String, Object>();
+        val ordersRtn = new LinkedHashMap<String, Object>();
         orders.forEach((k, v) -> ordersRtn.put(ProcArg.col(table, k), v));
         return ordersRtn;
     }

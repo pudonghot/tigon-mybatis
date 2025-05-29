@@ -191,16 +191,21 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
         Assert.state(mapper.find(deleteId) == null, "Test delete failed");
 
         val deleteId2 = 9;
-        mapper.delete(new Search(deleteId2));
+        mapper.delete(Search.of(deleteId2));
         Assert.state(mapper.find(deleteId2) == null, "Test delete failed");
     }
 
     @Test
     public void testScan() {
-        List<Integer> ids = Arrays.asList(10, 11, 13, 15);
-        mapper.scan(3, new Search(ids), user -> {
+        val ids = Arrays.asList(10, 11, 13, 15);
+        mapper.scan(3, Search.of(ids), user -> {
             log.info("Scan user [{}].", user);
             Assert.state(ids.contains(user.getId()), "Test scan failed");
         });
+    }
+
+    @Test
+    public void testOrderBy() {
+        mapper.list(Search.of().asc(User::getAccount).asc(User::getId));
     }
 }
