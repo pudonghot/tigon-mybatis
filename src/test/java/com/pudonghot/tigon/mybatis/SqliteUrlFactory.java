@@ -1,5 +1,6 @@
 package com.pudonghot.tigon.mybatis;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -15,8 +16,7 @@ public class SqliteUrlFactory {
      * @return SQLite URL
      */
     public static String url() {
-        final String url = SqliteUrlFactory.class
-            .getResource("/tigon-mybatis.db").getFile();
+        val url = SqliteUrlFactory.class.getResource("/tigon-mybatis.db").getFile();
         log.info("SQLite url [{}].", url);
         return "jdbc:sqlite:" + url;
     }
