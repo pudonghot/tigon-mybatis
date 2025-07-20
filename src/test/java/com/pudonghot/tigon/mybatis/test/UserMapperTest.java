@@ -14,6 +14,7 @@ import org.apache.commons.lang3.RandomUtils;
 import com.pudonghot.tigon.mybatis.TestDriver;
 import com.pudonghot.tigon.mybatis.UpdateObj;
 import com.pudonghot.tigon.mybatis.entity.User;
+import com.pudonghot.tigon.mybatis.util.FnGetter;
 import org.apache.commons.lang3.RandomStringUtils;
 import com.pudonghot.tigon.mybatis.mapper.UserMapper;
 import com.pudonghot.tigon.mybatis.util.FnGetterUtils;
@@ -130,50 +131,55 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
 
         Assert.state(mapper.listByName("Donghuang").size() == 1, "Test listByName failed");
 
-        val update = UpdateObj.of(User::getRemark, "update remark id gt 3 and lt 6");
         val updatedBy = "donghuang.cxn";
-        update.put(FnGetterUtils.getFieldName(User::getUpdatedBy), updatedBy);
-        update.put(FnGetterUtils.getFieldName(User::getUpdatedAt), new Date());
-        mapper.update(update, new Search().gt("id", 3).lt("id", 6));
+        val update = UpdateObj.of(User::getRemark, "update remark id gt 3 and lt 6")
+            .set(User::getUpdatedBy, updatedBy)
+            .set(User::getUpdatedAt, new Date());
+        mapper.update(update, Search.of().gt(User::getId, 3).lt(User::getId, 6));
         Assert.state(mapper.find(4).getUpdatedBy().equals(updatedBy),
             "Test update map failed");
         Assert.state(mapper.find(5).getUpdatedBy().equals(updatedBy),
             "Test update map failed");
 
-        mapper.setNull("remark", new Search(3));
+        mapper.update(User::getCity, "SHANGHAI", Search.of(3));
+        Assert.state(mapper.find(3).getCity().equals("SHANGHAI"), "Test update field failed");
+
+        mapper.setNull(User::getRemark, new Search(3));
         var user3 = mapper.find(3);
         Assert.state(user3.getRemark() == null, "Test setNull failed");
-        mapper.setNull(new String[] {FnGetterUtils.getFieldName(User::getRemark), FnGetterUtils.getFieldName(User::getUpdatedBy)}, new Search(3));
+        mapper.setNull(Arrays.asList((FnGetter<User, ?>) User::getRemark, User::getUpdatedBy), Search.of(3));
 
         user3 = mapper.find(3);
         Assert.state(user3.getRemark() == null &&
             user3.getUpdatedBy() == null, "Test setNull failed");
-        Assert.state(mapper.find(new Search(3)
-                        .isNull("updatedBy")).getRemark() == null,
+        Assert.state(mapper.find(Search.of(3)
+                        .isNull(User::getUpdatedBy)).getRemark() == null,
             "Test isNull failed");
-        Assert.state(mapper.find(new Search(3)
-                        .eq("updatedBy", null)).getRemark() == null,
+        Assert.state(mapper.find(Search.of(3)
+                        .eq(User::getUpdatedBy, null)).getRemark() == null,
             "Test eq NULL failed");
         Assert.state(mapper.find(
-                new Search(10).notNull(User::getUpdatedBy)).getRemark() != null,
+                Search.of(10).notNull(User::getUpdatedBy)).getRemark() != null,
             "Test notNull failed");
         Assert.state(mapper.find(
-                new Search(10).ne(User::getUpdatedBy, null)).getRemark() != null,
+                Search.of(10).ne(User::getUpdatedBy, null)).getRemark() != null,
             "Test notNull failed");
 
-        mapper.setNull(FnGetterUtils.getFieldName(User::getRemark), new Search().between("id", 6, 8));
+        mapper.setNull(FnGetterUtils.getFieldName(User::getRemark), Search.of().between(User::getId, 6, 8));
 
         mapper.update(FnGetterUtils.getFieldName(User::getRemark), "AA", 6);
         Assert.state(mapper.find(6).getRemark().equals("AA"), "Test update col failed");
         mapper.update(FnGetterUtils.getFieldName(User::getRemark), "BB", new Search(7));
         Assert.state(mapper.find(7).getRemark().equals("BB"), "Test update col failed");
 
-        final Integer id = mapper.findCol("id", new Search(1));
+        val id = mapper.findCol(User::getId, Search.of(1));
         Assert.state(Integer.valueOf(1).equals(id), "Test findCol failed");
-        final List<Integer> idList = mapper.listCol("`tb_user`.id", new Search(1));
+        final List<Integer> idList = mapper.listCol("`tb_user`.id", Search.of(1));
         Assert.state(Integer.valueOf(1).equals(idList.get(0)), "Test listCol failed");
+        val idList2 = mapper.listCol(User::getId, Search.of(1));
+        Assert.state(Integer.valueOf(1).equals(idList2.get(0)), "Test listCol failed");
 
-        val userList13 = mapper.list(new Search().build(
+        val userList13 = mapper.list(Search.of(
                 arg -> arg.addSql("id % 2 in ").addParamList(1, 3)));
         for (val user : userList13) {
             val idMod2 = user.getId() % 2;
@@ -185,16 +191,21 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
         Assert.state(mapper.find(deleteId) == null, "Test delete failed");
 
         val deleteId2 = 9;
-        mapper.delete(new Search(deleteId2));
+        mapper.delete(Search.of(deleteId2));
         Assert.state(mapper.find(deleteId2) == null, "Test delete failed");
     }
 
     @Test
     public void testScan() {
-        List<Integer> ids = Arrays.asList(10, 11, 13, 15);
-        mapper.scan(3, new Search(ids), user -> {
+        val ids = Arrays.asList(10, 11, 13, 15);
+        mapper.scan(3, Search.of(ids), user -> {
             log.info("Scan user [{}].", user);
             Assert.state(ids.contains(user.getId()), "Test scan failed");
         });
+    }
+
+    @Test
+    public void testOrderBy() {
+        mapper.list(Search.of().asc(User::getAccount).asc(User::getId));
     }
 }

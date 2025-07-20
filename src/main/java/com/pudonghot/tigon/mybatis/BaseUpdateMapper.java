@@ -3,7 +3,10 @@ package com.pudonghot.tigon.mybatis;
 import java.util.Map;
 import java.util.Collection;
 import org.apache.ibatis.annotations.Param;
+import com.pudonghot.tigon.mybatis.util.FnGetter;
+import com.pudonghot.tigon.mybatis.util.FnGetterUtils;
 import com.pudonghot.tigon.mybatis.xmlgen.annotation.MapperXmlEl;
+import static com.pudonghot.tigon.mybatis.util.FnGetterUtils.getFieldName;
 
 /**
  * @author Donghuang
@@ -62,6 +65,18 @@ public interface BaseUpdateMapper<PrimaryKey, Entity> extends SuperMapper<Entity
     /**
      * update col val
      *
+     * @param field field
+     * @param val val
+     * @param search search
+     * @return update result
+     */
+    default <T, R> int update(final FnGetter<T, R> field, final R val, final Search search) {
+        return update(getFieldName(field), val, search);
+    }
+
+    /**
+     * update col val
+     *
      * @param col col
      * @param val val
      * @param primaryKey primary key
@@ -70,13 +85,16 @@ public interface BaseUpdateMapper<PrimaryKey, Entity> extends SuperMapper<Entity
     int update(@Param(PARAM_COL_KEY) String col, @Param(PARAM_VAL_KEY) Object val, @Param(PARAM_SEARCH_KEY) PrimaryKey primaryKey);
 
     /**
-     * set col to null
+     * update col val
      *
-     * @param col col
+     * @param field field
+     * @param val val
      * @param primaryKey primary key
      * @return update result
      */
-    int setNull(@Param(PARAM_COL_KEY) String col, @Param(PARAM_SEARCH_KEY) PrimaryKey primaryKey);
+    default <T, R> int update(final FnGetter<T, R> field, final R val, final PrimaryKey primaryKey) {
+        return update(getFieldName(field), val, primaryKey);
+    }
 
     /**
      * set col null
@@ -88,13 +106,15 @@ public interface BaseUpdateMapper<PrimaryKey, Entity> extends SuperMapper<Entity
     int setNull(@Param(PARAM_COL_KEY) String col, @Param(PARAM_SEARCH_KEY) Search search);
 
     /**
-     * set cols null
+     * set col to null
      *
-     * @param cols cols
-     * @param primaryKey primary key
+     * @param field field
+     * @param search search
      * @return update result
      */
-    int setNull(@Param(PARAM_COLS_KEY) String[] cols, @Param(PARAM_SEARCH_KEY) PrimaryKey primaryKey);
+    default <T, R> int setNull(final FnGetter<T, R> field, final Search search) {
+        return setNull(getFieldName(field), search);
+    }
 
     /**
      * set cols null
@@ -106,20 +126,14 @@ public interface BaseUpdateMapper<PrimaryKey, Entity> extends SuperMapper<Entity
     int setNull(@Param(PARAM_COLS_KEY) String[] cols, @Param(PARAM_SEARCH_KEY) Search search);
 
     /**
-     * set cols null
+     * set cols to null
      *
-     * @param cols cols
-     * @param primaryKey primary key
-     * @return update result
-     */
-    int setNull(@Param(PARAM_COLS_KEY) Collection<String> cols, @Param(PARAM_SEARCH_KEY) PrimaryKey primaryKey);
-
-    /**
-     * set cols null
-     *
-     * @param cols cols
+     * @param fields fields
      * @param search search
      * @return update result
      */
-    int setNull(@Param(PARAM_COLS_KEY) Collection<String> cols, @Param(PARAM_SEARCH_KEY) Search search);
+    default <T> int setNull(final Collection<FnGetter<T, ?>> fields, final Search search) {
+        return setNull(fields.stream().map(FnGetterUtils::getFieldName).toArray(String[]::new), search);
+    }
+
 }

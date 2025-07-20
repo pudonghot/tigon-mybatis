@@ -18,12 +18,12 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 
-        <spring.version>6.1.16</spring.version>
-        <spring-boot.version>3.3.8</spring-boot.version>
+        <spring.version>6.1.21</spring.version>
+        <spring-boot.version>3.3.13</spring-boot.version>
         <mybatis.version>3.5.19</mybatis.version>
-        <mybatis-spring.version>3.0.4</mybatis-spring.version>
+        <mybatis-spring.version>3.0.5</mybatis-spring.version>
 
-        <revision>1.0.1-RC1</revision>
+        <revision>1.0.1</revision>
     </properties>
 
     <url>https://gitee.com/chyxion/tigon-mybatis</url>
@@ -57,6 +57,10 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
         </dependency>
@@ -64,15 +68,14 @@
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
+
+        <!--Provided-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
@@ -87,7 +90,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>3.0.3</version>
+            <version>3.0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -98,13 +101,13 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>1.2.20</version>
+            <version>1.2.25</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.43.2.1</version>
+            <version>3.50.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -167,7 +170,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.14.0</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -177,7 +180,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.4.2</version>
                     <configuration>
                         <archive>
                             <manifest>
@@ -194,7 +197,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.5</version>
+                    <version>3.2.7</version>
                     <executions>
                         <execution>
                             <id>sign</id>
