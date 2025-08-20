@@ -116,39 +116,72 @@
 
     <!-- Update -->
     <sql id="update">
-        update <include refid="table" />
-        set
         <choose>
-            <when test="_parameter.containsKey(&quot;__col__&quot;)">
-                <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__col__)" />
-                ${__us_col__} = #{__val__}
-            </when>
-            <when test="__model__ instanceof java.util.Map">
-                <foreach collection="__model__" index="__col__" item="__val__" separator=", ">
-                    <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__col__)" />
-                    ${__us_col__} = <include refid="Tigon.__val__" />
+            <when test="_parameter.containsKey(&quot;__models__&quot;)">
+                <bind name="__first_update_map__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@updateMap(__models__.iterator().next(), false)" />
+                update <include refid="table" /> t
+                join (
+                    select null <include refid="primaryKey" />,
+                    <foreach collection="__first_update_map__"
+                             index="__m_col__"
+                             item="__val__" separator=", ">
+                        <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__m_col__)" />
+                        null ${__us_col__}
+                    </foreach>
+
+                    <foreach item="__model__" collection="__models__" separator=" ">
+                        union select
+                        <foreach collection="@com.pudonghot.tigon.mybatis.util.EntityUtils@updateMap(__model__, true)" item="__val__" separator=", ">
+                            <include refid="Tigon.__val__" />
+                        </foreach>
+                    </foreach>
+                ) tt
+                on t.<include refid="primaryKey" /> = tt.<include refid="primaryKey" />
+
+                set
+                <foreach collection="__first_update_map__"
+                         index="__m_col__"
+                         item="__val__" separator=", ">
+                    <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__m_col__)" />
+                    t.${__us_col__} = tt.${__us_col__}
                 </foreach>
             </when>
             <otherwise>
-                <if test="__model__ instanceof com.pudonghot.tigon.mybatis.BasicEntity">
-                    <bind name="__before_update_dummy__" value="__model__.beforeUpdate()" />
-                </if>
-                <foreach collection="@com.pudonghot.tigon.mybatis.util.EntityUtils@updateMap(__model__)"
-                         index="__m_col__" item="__val__" separator=", ">
-                    <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__m_col__)" />
-                    ${__us_col__} = <include refid="Tigon.__val__" />
-                </foreach>
-            </otherwise>
-        </choose>
+                update <include refid="table" />
+                set
+                <choose>
+                    <when test="_parameter.containsKey(&quot;__col__&quot;)">
+                        <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__col__)" />
+                        ${__us_col__} = #{__val__}
+                    </when>
+                    <when test="__model__ instanceof java.util.Map">
+                        <foreach collection="__model__" index="__col__" item="__val__" separator=", ">
+                            <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__col__)" />
+                            ${__us_col__} = <include refid="Tigon.__val__" />
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        <if test="__model__ instanceof com.pudonghot.tigon.mybatis.BasicEntity">
+                            <bind name="__before_update_dummy__" value="__model__.beforeUpdate()" />
+                        </if>
+                        <foreach collection="@com.pudonghot.tigon.mybatis.util.EntityUtils@updateMap(__model__, false)"
+                                 index="__m_col__" item="__val__" separator=", ">
+                            <bind name="__us_col__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@quotationWrap(__m_col__)" />
+                            ${__us_col__} = <include refid="Tigon.__val__" />
+                        </foreach>
+                    </otherwise>
+                </choose>
 
-        <choose>
-        <when test="_parameter.containsKey(&quot;__search__&quot;)">
-            <include refid="Tigon.search" />
-        </when>
-        <otherwise>
-            <bind name="__primary_key_val__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@primaryKeyValue(__model__)" />
-            where <include refid="primaryKey" /> = #{__primary_key_val__}
-        </otherwise>
+                <choose>
+                    <when test="_parameter.containsKey(&quot;__search__&quot;)">
+                        <include refid="Tigon.search" />
+                    </when>
+                    <otherwise>
+                        <bind name="__primary_key_val__" value="@com.pudonghot.tigon.mybatis.util.EntityUtils@primaryKeyValue(__model__)" />
+                        where <include refid="primaryKey" /> = #{__primary_key_val__}
+                    </otherwise>
+                </choose>
+            </otherwise>
         </choose>
     </sql>
     <!--/ Update -->

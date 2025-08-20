@@ -115,6 +115,9 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
             mapper.update(update, user.getId());
         }
 
+        // sqlite not supports batch update
+        // mapper.update(userListFound);
+
         val userDonghuang = mapper.findByAccount(donghuang);
         Assert.state(userDonghuang != null, "Test find failed");
         Assert.state(userDonghuang.getAccessKey().length() == 16, "Test @RawValue failed");

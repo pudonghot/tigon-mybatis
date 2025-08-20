@@ -75,13 +75,16 @@ public final class EntityUtils {
         val entityClass = entity.getClass();
 
         if (AnnotationUtils.findAnnotation(entityClass, NoPrimaryKey.class) != null) {
+            log.warn("Entity [{}] has no primary key.", entity);
             return "!!!NO_PRIMARY_KEY!!!";
         }
 
         val field = ReflectionUtils.findField(
                 entityClass, primaryKeyField(entityClass));
         field.setAccessible(true);
-        return ReflectionUtils.getField(field, entity);
+        val pk = ReflectionUtils.getField(field, entity);
+        log.trace("Entity [{}] primary key [{}] got.", entity, pk);
+        return pk;
     }
 
     /**
@@ -116,6 +119,7 @@ public final class EntityUtils {
             mapRtn.put(fieldName, SqlParam.val(value));
         }, fieldFilter(entity, false));
 
+        log.trace("Entity [{}] insert map [{}] got.", entity, mapRtn);
         return mapRtn;
     }
 
@@ -125,9 +129,14 @@ public final class EntityUtils {
      *
      * @return update map
      */
-    public static Map<String, SqlParam> updateMap(final Object entity) {
+    public static Map<String, SqlParam> updateMap(final Object entity, boolean withPrimaryKey) {
         val entityClass = entity.getClass();
         val mapRtn = new LinkedHashMap<String, SqlParam>();
+
+        if (withPrimaryKey) {
+            mapRtn.put(primaryKeyField(entityClass), SqlParam.val(primaryKeyValue(entity)));
+        }
+
         ReflectionUtils.doWithFields(entityClass, field -> {
             field.setAccessible(true);
             val fieldName = field.getName();
@@ -142,6 +151,7 @@ public final class EntityUtils {
 
         }, fieldFilter(entity, true));
 
+        log.trace("Entity [{}] update map [{}] got.", entity, mapRtn);
         return mapRtn;
     }
 
