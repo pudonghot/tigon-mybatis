@@ -98,7 +98,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
     public void testRun() {
         val userListFound = mapper.list(new Search());
         Assert.state(userListFound.size() == testCaseSize, "Test list failed");
-        Assert.state(mapper.list(Arrays.asList(1, 2, 3)).size() == 3,
+        Assert.state(mapper.list(List.of(1, 2, 3)).size() == 3,
             "Test list by id collection failed");
         Assert.state(mapper.list(new Integer[]{1, 2, 3}).size() == 3,
             "Test list by id array failed");
@@ -203,7 +203,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
 
     @Test
     public void testScan() {
-        val ids = Arrays.asList(10, 11, 13, 15);
+        val ids = List.of(10, 11, 13, 15);
         mapper.scan(3, Search.of(ids), user -> {
             log.info("Scan user [{}].", user);
             Assert.state(ids.contains(user.getId()), "Test scan failed");

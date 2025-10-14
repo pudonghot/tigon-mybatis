@@ -15,7 +15,7 @@ Tigon MyBatis为Spring工程中MyBatis的Mapper提供优质增强，主要有以
 <dependency>
   <groupId>com.pudonghot.tigon</groupId>
   <artifactId>tigon-mybatis</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 </dependency>
 ```
 
@@ -119,7 +119,7 @@ user2.setAccount("luffy");
 user2.setCreatedAt(new Date());
 
 // 批量插入记录
-mapper.insert(Arrays.asList(user1, user2));
+mapper.insert(List.of(user1, user2));
 ```
 
 ##### II. 查询
@@ -198,6 +198,9 @@ user.setUpdatedBy("SYS");
 user.setUpdatedAt(new Date());
 // 更新单个实体对象
 mapper.update(user);
+
+// 更新多个实体对象，目前仅支持MySQL
+mapper.update(List.of(user));
 ```
 
 通过`Map<String, Object>`更新
