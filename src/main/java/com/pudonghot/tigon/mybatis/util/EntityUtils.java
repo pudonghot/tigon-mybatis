@@ -1,14 +1,24 @@
 package com.pudonghot.tigon.mybatis.util;
 
 import lombok.val;
-import java.util.*;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.lang.reflect.Field;
 import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
-import com.pudonghot.tigon.mybatis.*;
+import com.pudonghot.tigon.mybatis.RawValue;
+import com.pudonghot.tigon.mybatis.SqlParam;
+import com.pudonghot.tigon.mybatis.Transient;
+import com.pudonghot.tigon.mybatis.NotUpdate;
+import com.pudonghot.tigon.mybatis.PrimaryKey;
 import org.springframework.util.ReflectionUtils;
+import com.pudonghot.tigon.mybatis.NoPrimaryKey;
+import com.pudonghot.tigon.mybatis.NotUpdateWhenNull;
 import org.springframework.core.annotation.AnnotationUtils;
+import com.pudonghot.tigon.mybatis.TigonMyBatisConfiguration;
 
 /**
  * @author Donghuang

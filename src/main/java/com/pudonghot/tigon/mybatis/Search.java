@@ -1,15 +1,41 @@
 package com.pudonghot.tigon.mybatis;
 
 import lombok.val;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.lang.reflect.Array;
 import lombok.EqualsAndHashCode;
 import java.util.function.Consumer;
 import com.pudonghot.tigon.mybatis.util.FnGetter;
 import com.pudonghot.tigon.mybatis.util.StrUtils;
 import com.pudonghot.tigon.mybatis.util.EntityUtils;
-import static com.pudonghot.tigon.mybatis.Criterion.Type.*;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.EQ;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.GT;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.AND;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.GTE;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.IN;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.LT;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.NE;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.OR;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.LTE;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.LIKE;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.BETWEEN;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.BUILDER;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.NOT_IN;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.IS_NULL;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.NOT_LIKE;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.IS_NOT_NULL;
+import static com.pudonghot.tigon.mybatis.Criterion.Type.NOT_BETWEEN;
 import static com.pudonghot.tigon.mybatis.util.FnGetterUtils.getFieldName;
 
 /**

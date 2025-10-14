@@ -26,6 +26,8 @@ public interface BaseUpdateMapper<PrimaryKey, Entity> extends SuperMapper<Entity
     int update(@Param(PARAM_MODEL_KEY) Entity entity);
 
     /**
+     * MySQL Only
+     *
      * update entities by primary key
      *
      * @param entities update entities
