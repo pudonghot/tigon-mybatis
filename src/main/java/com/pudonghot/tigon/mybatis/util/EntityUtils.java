@@ -139,13 +139,9 @@ public final class EntityUtils {
      *
      * @return update map
      */
-    public static Map<String, SqlParam> updateMap(final Object entity, boolean withPrimaryKey) {
+    public static Map<String, SqlParam> updateMap(final Object entity) {
         val entityClass = entity.getClass();
         val mapRtn = new LinkedHashMap<String, SqlParam>();
-
-        if (withPrimaryKey) {
-            mapRtn.put(primaryKeyField(entityClass), SqlParam.val(primaryKeyValue(entity)));
-        }
 
         ReflectionUtils.doWithFields(entityClass, field -> {
             field.setAccessible(true);
@@ -162,6 +158,35 @@ public final class EntityUtils {
         }, fieldFilter(entity, true));
 
         log.trace("Entity [{}] update map [{}] got.", entity, mapRtn);
+        return mapRtn;
+    }
+
+    /**
+     * return batch update map
+     * called in tigon-mybatis.xml
+     *
+     * @return batch update map
+     */
+    public static Map<String, SqlParam> batchUpdateMap(final Object entity) {
+        val entityClass = entity.getClass();
+        val mapRtn = new LinkedHashMap<String, SqlParam>();
+        mapRtn.put(primaryKeyField(entityClass), SqlParam.val(primaryKeyValue(entity)));
+
+        ReflectionUtils.doWithFields(entityClass, field -> {
+            field.setAccessible(true);
+            val fieldName = field.getName();
+
+            val rawValue = getRawValue(false, entity, field);
+            if (rawValue != null) {
+                mapRtn.put(fieldName, rawValue);
+                return;
+            }
+
+            mapRtn.put(fieldName, SqlParam.val(ReflectionUtils.getField(field, entity), field.isAnnotationPresent(NotUpdateWhenNull.class)));
+
+        }, batchUpdateFieldFilter());
+
+        log.trace("Entity [{}] batch update map [{}] got.", entity, mapRtn);
         return mapRtn;
     }
 
@@ -279,6 +304,22 @@ public final class EntityUtils {
                         return false;
                     }
                 }
+            }
+
+            return true;
+        };
+    }
+
+    static ReflectionUtils.FieldFilter batchUpdateFieldFilter() {
+        return field -> {
+
+            if (!isNormal(field)) {
+                return false;
+            }
+
+            // do not update field marks @NotUpdate
+            if (field.isAnnotationPresent(NotUpdate.class)) {
+                return false;
             }
 
             return true;

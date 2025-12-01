@@ -15,13 +15,18 @@ public class SqlParam implements Serializable {
 
     private final boolean raw;
     private final Object value;
+    private final boolean ignoreNull;
 
     public static SqlParam rawVal(final Object val) {
-        return new SqlParam(true, val);
+        return new SqlParam(true, val, false);
     }
 
     public static SqlParam val(final Object val) {
-        return new SqlParam(false, val);
+        return new SqlParam(false, val, false);
+    }
+
+    public static SqlParam val(final Object val, boolean ignoreNull) {
+        return new SqlParam(false, val, ignoreNull);
     }
 
     /**

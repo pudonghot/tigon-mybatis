@@ -105,7 +105,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
         Assert.state(mapper.count(null) == testCaseSize, "Test count failed");
 
         Assert.state(mapper.count(Search.of(User::getAccount, donghuang)) == 1, "Test count failed");
-        Assert.state(mapper.find(Search.of(User::getAccount, donghuang)).getAccount().equals(donghuang), "Test find failed");
+        Assert.state(mapper.find(Search.of(User::getAccount, donghuang).distinct(Boolean.TRUE)).getAccount().equals(donghuang), "Test find failed");
         Assert.state(mapper.exists(Search.of(User::getAccount, donghuang)), "Test exists failed");
 
         for (val user : userListFound) {
@@ -178,8 +178,11 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
         mapper.update(FnGetterUtils.getFieldName(User::getRemark), "BB", new Search(7));
         Assert.state(mapper.find(7).getRemark().equals("BB"), "Test update col failed");
 
-        val id = mapper.findCol(User::getId, Search.of(1));
+        val id = mapper.findCol(User::getId, Search.of(1).distinct(Boolean.TRUE));
         Assert.state(Integer.valueOf(1).equals(id), "Test findCol failed");
+        val id2 = mapper.findCol(User::getId, Search.of(1));
+        Assert.state(Integer.valueOf(1).equals(id2), "Test findCol failed");
+
         final List<Integer> idList = mapper.listCol("`tb_user`.id", Search.of(1));
         Assert.state(Integer.valueOf(1).equals(idList.get(0)), "Test listCol failed");
         val idList2 = mapper.listCol(User::getId, Search.of(1));

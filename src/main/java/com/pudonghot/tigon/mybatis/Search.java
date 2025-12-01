@@ -1,5 +1,6 @@
 package com.pudonghot.tigon.mybatis;
 
+import lombok.Getter;
 import lombok.val;
 import java.util.Map;
 import java.util.Set;
@@ -97,6 +98,7 @@ public class Search implements Serializable {
 
     // core fields
     private final Set<Criterion> criteria = new LinkedHashSet<>();
+    private Boolean distinct = Boolean.FALSE;
     private String table;
     private Integer offset;
     private Integer limit;
@@ -110,6 +112,7 @@ public class Search implements Serializable {
      */
     public static Search clone(final Search origin) {
         val search = of();
+        search.distinct = origin.distinct;
         search.table = origin.table;
         search.criteria.addAll(origin.criteria);
         search.orders.putAll(origin.orders);
@@ -287,6 +290,17 @@ public class Search implements Serializable {
      */
     public <T, R> Search(final FnGetter<T, R> field, final R[] values) {
         this(getFieldName(field), values);
+    }
+
+    /**
+     * set distinct
+     *
+     * @param distinct distinct
+     * @return this
+     */
+    public Search distinct(final Boolean distinct) {
+        this.distinct = distinct;
+        return this;
     }
 
     /**
@@ -1170,6 +1184,13 @@ public class Search implements Serializable {
      */
     public List<Object> assemble() {
         return assemble(false);
+    }
+
+    /**
+     * @return true if distinct
+     */
+    public boolean hasDistinct() {
+        return distinct;
     }
 
     /**

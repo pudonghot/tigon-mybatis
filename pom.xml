@@ -24,7 +24,7 @@
         <mybatis.version>3.5.19</mybatis.version>
         <mybatis-spring.version>3.0.5</mybatis-spring.version>
 
-        <revision>1.0.2</revision>
+        <revision>1.0.3-SNAPSHOT</revision>
     </properties>
 
     <url>https://gitee.com/chyxion/tigon-mybatis</url>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>3.0.4</version>
+            <version>${mybatis-spring.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
