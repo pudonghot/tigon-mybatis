@@ -18,13 +18,13 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 
-        <spring.version>6.2.11</spring.version>
-        <spring-boot.version>3.5.6</spring-boot.version>
+        <spring.version>7.0.2</spring.version>
+        <spring-boot.version>4.0.1</spring-boot.version>
 
         <mybatis.version>3.5.19</mybatis.version>
-        <mybatis-spring.version>3.0.5</mybatis-spring.version>
+        <mybatis-spring.version>4.0.0</mybatis-spring.version>
 
-        <revision>1.0.3-SNAPSHOT</revision>
+        <revision>1.0.3</revision>
     </properties>
 
     <url>https://gitee.com/chyxion/tigon-mybatis</url>
