@@ -21,6 +21,7 @@ import static com.pudonghot.tigon.mybatis.util.FnGetterUtils.getFieldName;
 @MapperXmlEl(tag = MapperXmlEl.Tag.SELECT, id = "findCol", resultType = "object", include = "Tigon.selectCol")
 @MapperXmlEl(tag = MapperXmlEl.Tag.SELECT, id = "list", resultType = MapperXmlEl.RESULT_TYPE_ENTITY)
 @MapperXmlEl(tag = MapperXmlEl.Tag.SELECT, id = "listCol", resultType = "object", include = "Tigon.selectCol")
+@MapperXmlEl(tag = MapperXmlEl.Tag.SELECT, id = "select", resultType = MapperXmlEl.RESULT_TYPE_ENTITY)
 public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity> {
 
     /**
@@ -122,6 +123,15 @@ public interface BaseQueryMapper<PrimaryKey, Entity> extends SuperMapper<Entity>
     default <T, R> List<R> listCol(final FnGetter<T, R> field, final Search search) {
         return listCol(getFieldName(field), search);
     }
+
+    /**
+     * list of select
+     *
+     * @param selectExpr select expression, for example: id, name, max(id)
+     * @param search search
+     * @return list result
+     */
+    List<Entity> select(@Param(PARAM_SELECT_EXPR_KEY) String selectExpr, @Param(PARAM_SEARCH_KEY) Search search);
 
     /**
      * scan entities

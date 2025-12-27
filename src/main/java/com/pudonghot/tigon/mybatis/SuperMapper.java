@@ -24,6 +24,7 @@ public interface SuperMapper<Enity> {
     String PARAM_COL_KEY = "__col__";
     String PARAM_COLS_KEY = "__cols__";
     String PARAM_VAL_KEY = "__val__";
+    String PARAM_SELECT_EXPR_KEY = "__select_expr__";
 
     /**
      * get mapper table name

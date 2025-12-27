@@ -106,8 +106,7 @@ public final class EntityUtils {
     public static Map<String, SqlParam> insertMap(final Object entity) {
         val entityClass = entity.getClass();
 
-        val insertDefaultInsteadNull = TigonMyBatisConfiguration.getStaticInstance()
-                .getProperties().isInsertDefaultInsteadNull();
+        val insertDefaultInsteadNull = useDefaultInsteadNull();
 
         val mapRtn = new LinkedHashMap<String, SqlParam>();
         ReflectionUtils.doWithFields(entityClass, field -> {
@@ -206,12 +205,17 @@ public final class EntityUtils {
                 return null;
             }
 
+            val fieldVal = ReflectionUtils.getField(field, entity);
+            if (fieldVal != null) {
+                return SqlParam.rawVal(fieldVal);
+            }
+
             val annoValue = annoRawValue.value();
             if (StrUtils.isNotBlank(annoValue)) {
                 return SqlParam.rawVal(annoValue);
             }
 
-            return SqlParam.rawVal(ReflectionUtils.getField(field, entity));
+            return null;
         }
 
         return null;
@@ -332,5 +336,9 @@ public final class EntityUtils {
                 !Modifier.isPublic(modifiers) &&
                 !Modifier.isStatic(modifiers) &&
                 !field.isAnnotationPresent(Transient.class);
+    }
+
+    static boolean useDefaultInsteadNull() {
+        return TigonMyBatisConfiguration.getStaticInstance().getProperties().isInsertDefaultInsteadNull();
     }
 }

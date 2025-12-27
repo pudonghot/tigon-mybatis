@@ -1,12 +1,12 @@
 package com.pudonghot.tigon.test;
 
 import lombok.val;
-import org.junit.Test;
-import org.junit.Assert;
 import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import com.pudonghot.tigon.mybatis.Search;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Donghuang
@@ -47,10 +47,10 @@ public class TestDriver {
         val quoMark = "`";
         val regexp = "(?<!`)[^.`]+(?!`)";
 
-        Assert.assertTrue("a".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`a`"));
-        Assert.assertTrue("ab".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`"));
-        Assert.assertTrue("ab.ac".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`.`ac`"));
-        Assert.assertTrue("ab-ac.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
-        Assert.assertTrue("`ab-ac`.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
+        Assertions.assertTrue("a".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`a`"));
+        Assertions.assertTrue("ab".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`"));
+        Assertions.assertTrue("ab.ac".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab`.`ac`"));
+        Assertions.assertTrue("ab-ac.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
+        Assertions.assertTrue("`ab-ac`.ac-ad".replaceAll(regexp, quoMark + "$0" + quoMark).equals("`ab-ac`.`ac-ad`"));
     }
 }

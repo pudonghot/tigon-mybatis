@@ -339,6 +339,16 @@
     </sql>
     <!--/ Select Col -->
 
+    <!-- Select -->
+    <sql id="select">
+        select
+        ${__select_expr__}
+        from
+        <include refid="table" />
+        <include refid="Tigon.search" />
+    </sql>
+    <!--/ Select -->
+
     <!-- Count -->
     <sql id="count">
         select count(*) from

@@ -31,6 +31,7 @@ public @interface MapperXmlEl {
 
     /**
      * include sql fragment id, for example "Tigon.find"
+     * if include is blank, using "Tigon.${id}"
      *
      * @return include sql fragment id
      */

@@ -3,13 +3,13 @@ package com.pudonghot.tigon.mybatis.test;
 import lombok.val;
 import java.util.Date;
 import java.util.List;
-import org.junit.Test;
 import java.util.Arrays;
-import org.junit.Before;
 import java.util.Calendar;
 import java.util.ArrayList;
-import org.junit.runner.RunWith;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.util.Assert;
 import com.pudonghot.tigon.mybatis.Search;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,6 @@ import com.pudonghot.tigon.mybatis.mapper.UserMapper;
 import com.pudonghot.tigon.mybatis.util.FnGetterUtils;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 
 /**
@@ -31,7 +30,6 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
  * @date Sep 03, 2020 14:37:38
  */
 @Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = TestDriver.class)
 public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTests {
     @Autowired
@@ -39,7 +37,7 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
     private final int testCaseSize = 17;
     private final String donghuang = "donghuang";
 
-    @Before
+    @BeforeTestClass
     public void setup() {
         Assert.state("tb_user".equals(mapper.getTable()), "Table name assert failed");
 
@@ -216,5 +214,10 @@ public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTest
     @Test
     public void testOrderBy() {
         mapper.list(Search.of().asc(User::getAccount).asc(User::getId));
+    }
+
+    @Test
+    public void testSelect() {
+        val users = mapper.select("ifnull(max(id), 0)", Search.of().limit(1));
     }
 }
