@@ -37,10 +37,16 @@ public final class EntityUtils {
      * @return col
      */
     public static String quotationWrap(final String table, final String col) {
-        val underscoreCol = StrUtils.camelToUnderscore(col);
+        if (col.indexOf('.') != -1) {
+            return StrUtils.camelToUnderscore(col);
+        }
 
-        val concatenateCol = StrUtils.isNotBlank(table) &&
-                !underscoreCol.contains(".") ?
+        if (col.indexOf('(') != -1) {
+            return col;
+        }
+
+        val underscoreCol = StrUtils.camelToUnderscore(col);
+        val concatenateCol = StrUtils.isNotBlank(table) ?
                 table + "." + underscoreCol : underscoreCol;
 
         val quotationMark = TigonMyBatisConfiguration.getStaticInstance()
