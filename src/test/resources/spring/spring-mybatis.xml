@@ -8,7 +8,8 @@
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
         init-method="init"
         destroy-method="close"
-        p:maxActive="16">
+        p:maxActive="16"
+        p:testWhileIdle="false">
         <property name="url">
             <bean class="com.pudonghot.tigon.mybatis.SqliteUrlFactory" factory-method="url" />
         </property>

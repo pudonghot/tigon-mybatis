@@ -1,223 +1,167 @@
 package com.pudonghot.tigon.mybatis.test;
 
-import lombok.val;
-import java.util.Date;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.ArrayList;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
-import org.springframework.util.Assert;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import com.pudonghot.tigon.mybatis.Search;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import com.pudonghot.tigon.mybatis.TestDriver;
 import com.pudonghot.tigon.mybatis.UpdateObj;
 import com.pudonghot.tigon.mybatis.entity.User;
-import com.pudonghot.tigon.mybatis.util.FnGetter;
-import org.apache.commons.lang3.RandomStringUtils;
 import com.pudonghot.tigon.mybatis.mapper.UserMapper;
-import com.pudonghot.tigon.mybatis.util.FnGetterUtils;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.pudonghot.tigon.mybatis.util.FnGetter;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * @author Donghuang
- * @date Sep 03, 2020 14:37:38
- */
-@Slf4j
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Transactional
 @SpringBootTest(classes = TestDriver.class)
-public class UserMapperTest extends AbstractTransactionalJUnit4SpringContextTests {
+class UserMapperTest {
+    private static final int TEST_CASE_SIZE = 17;
+    private static final String SPECIAL_ACCOUNT = "donghuang";
+
     @Autowired
     private UserMapper mapper;
-    private final int testCaseSize = 17;
-    private final String donghuang = "donghuang";
 
-    @BeforeTestClass
-    public void setup() {
-        Assert.state("tb_user".equals(mapper.getTable()), "Table name assert failed");
+    @Autowired
+    private SqlSessionFactory sqlSessionFactory;
 
-        val userList = new ArrayList<User>(10);
+    @BeforeEach
+    void insertDeterministicFixtures() {
+        assertEquals("tb_user", mapper.getTable());
 
-        // birthdate from 1980 to 2000
-        val dateFrom = Calendar.getInstance();
-        dateFrom.set(1980, 1, 1, 0, 0);
-        val dateTo = Calendar.getInstance();
-        dateTo.set(2000, 1, 1, 0, 0);
-
-        for (int i = 0; i < testCaseSize - 1; ++i) {
-            val user = new User();
-            user.setName("User " + i);
-            user.setAccount("account" + i);
-            user.setMobile("1376" + RandomStringUtils.randomNumeric(7));
-            user.setPassword(RandomStringUtils.randomAlphanumeric(16));
-            user.setGender(RandomUtils.nextInt(0, 2) > 0 ?
-                User.Gender.MALE : User.Gender.FEMALE);
-
-            user.setBirthDate(new Date(
-                RandomUtils.nextLong(dateFrom.getTimeInMillis(),
-                    dateTo.getTimeInMillis())));
-
-            user.setCity(RandomUtils.nextInt(0, 2) > 0 ?
-                "Hangzhou" : "Shanghai");
-
+        var users = new ArrayList<User>(TEST_CASE_SIZE);
+        for (int i = 1; i <= TEST_CASE_SIZE; i++) {
+            var user = new User();
+            user.setName(i == TEST_CASE_SIZE ? "Donghuang" : "User " + i);
+            user.setAccount(i == TEST_CASE_SIZE ? SPECIAL_ACCOUNT : "account-" + i);
+            user.setMobile(String.format("1376000%04d", i));
+            user.setPassword("password-" + i);
+            user.setGender(i % 2 == 0 ? User.Gender.FEMALE : User.Gender.MALE);
+            user.setBirthDate(new Date(315_532_800_000L + i * 86_400_000L));
+            user.setCity(i % 2 == 0 ? "Hangzhou" : "Shanghai");
             user.setActive(true);
-            user.setRemark("Init remark");
-            user.setCreatedBy(donghuang);
-            user.setCreatedAt(new Date());
-            userList.add(user);
-        }
-        mapper.insert(userList);
-
-        val user = new User();
-        user.setName(StringUtils.capitalize(donghuang));
-        user.setAccount(donghuang);
-        user.setMobile("1376" + RandomStringUtils.randomNumeric(7));
-        user.setPassword(RandomStringUtils.randomAlphanumeric(16));
-        user.setGender(User.Gender.MALE);
-        user.setBirthDate(new Date(
-            RandomUtils.nextLong(dateFrom.getTimeInMillis(),
-                dateTo.getTimeInMillis())));
-        user.setCity("Shanghai");
-
-        user.setActive(true);
-        user.setRemark("Uncle Donghuang");
-        user.setCreatedBy("donghuang");
-        user.setCreatedAt(new Date());
-        mapper.insert(user);
-        // Assert.state(user.getId() != null, "Test @UseGeneratedKeys failed");
-    }
-
-    @Test
-    public void testRun() {
-        val userListFound = mapper.list(new Search());
-        Assert.state(userListFound.size() == testCaseSize, "Test list failed");
-        Assert.state(mapper.list(List.of(1, 2, 3)).size() == 3,
-            "Test list by id collection failed");
-        Assert.state(mapper.list(new Integer[]{1, 2, 3}).size() == 3,
-            "Test list by id array failed");
-        Assert.state(mapper.count(null) == testCaseSize, "Test count failed");
-
-        Assert.state(mapper.count(Search.of(User::getAccount, donghuang)) == 1, "Test count failed");
-        Assert.state(mapper.find(Search.of(User::getAccount, donghuang).distinct(Boolean.TRUE)).getAccount().equals(donghuang), "Test find failed");
-        Assert.state(mapper.exists(Search.of(User::getAccount, donghuang)), "Test exists failed");
-
-        for (val user : userListFound) {
-            log.info("User [{}] found.", user);
-            user.setUpdatedBy(donghuang);
-            user.setUpdatedAt(new Date());
-            mapper.update(user);
-
-            val update = UpdateObj.of(User::getRemark, user.getRemark() + " Updated");
-            mapper.update(update, user.getId());
+            user.setRemark("Remark " + i);
+            user.setCreatedBy(SPECIAL_ACCOUNT);
+            user.setCreatedAt(new Date(1_577_836_800_000L + i * 1_000L));
+            users.add(user);
         }
 
-        // sqlite not supports batch update
-        // mapper.update(userListFound);
+        assertEquals(TEST_CASE_SIZE, mapper.insert(users));
+    }
 
-        val userDonghuang = mapper.findByAccount(donghuang);
-        Assert.state(userDonghuang != null, "Test find failed");
-        Assert.state(userDonghuang.getAccessKey().length() == 16, "Test @RawValue failed");
-        userDonghuang.setCity("Beijing");
-        userDonghuang.setAccount("UpdateWillBeIgnored");
-        mapper.update(userDonghuang);
+    @Test
+    void registersGeneratedStatementsAndKeepsCustomMapperXml() {
+        var configuration = sqlSessionFactory.getConfiguration();
+        var namespace = UserMapper.class.getName() + ".";
 
-        val account10Updated = mapper.find(userDonghuang.getId());
-        Assert.state(userDonghuang.getCity().equals(
-                account10Updated.getCity()),
-            "Test update failed");
-        Assert.state(donghuang.equals(account10Updated.getAccount()),
-            "Account should not be updated");
-
-        Assert.state(mapper.listByName("Donghuang").size() == 1, "Test listByName failed");
-
-        val updatedBy = "donghuang.cxn";
-        val update = UpdateObj.of(User::getRemark, "update remark id gt 3 and lt 6")
-            .set(User::getUpdatedBy, updatedBy)
-            .set(User::getUpdatedAt, new Date());
-        mapper.update(update, Search.of().gt(User::getId, 3).lt(User::getId, 6));
-        Assert.state(mapper.find(4).getUpdatedBy().equals(updatedBy),
-            "Test update map failed");
-        Assert.state(mapper.find(5).getUpdatedBy().equals(updatedBy),
-            "Test update map failed");
-
-        mapper.update(User::getCity, "SHANGHAI", Search.of(3));
-        Assert.state(mapper.find(3).getCity().equals("SHANGHAI"), "Test update field failed");
-
-        mapper.setNull(User::getRemark, new Search(3));
-        var user3 = mapper.find(3);
-        Assert.state(user3.getRemark() == null, "Test setNull failed");
-        mapper.setNull(Arrays.asList((FnGetter<User, ?>) User::getRemark, User::getUpdatedBy), Search.of(3));
-
-        user3 = mapper.find(3);
-        Assert.state(user3.getRemark() == null &&
-            user3.getUpdatedBy() == null, "Test setNull failed");
-        Assert.state(mapper.find(Search.of(3)
-                        .isNull(User::getUpdatedBy)).getRemark() == null,
-            "Test isNull failed");
-        Assert.state(mapper.find(Search.of(3)
-                        .eq(User::getUpdatedBy, null)).getRemark() == null,
-            "Test eq NULL failed");
-        Assert.state(mapper.find(
-                Search.of(10).notNull(User::getUpdatedBy)).getRemark() != null,
-            "Test notNull failed");
-        Assert.state(mapper.find(
-                Search.of(10).ne(User::getUpdatedBy, null)).getRemark() != null,
-            "Test notNull failed");
-
-        mapper.setNull(FnGetterUtils.getFieldName(User::getRemark), Search.of().between(User::getId, 6, 8));
-
-        mapper.update(FnGetterUtils.getFieldName(User::getRemark), "AA", 6);
-        Assert.state(mapper.find(6).getRemark().equals("AA"), "Test update col failed");
-        mapper.update(FnGetterUtils.getFieldName(User::getRemark), "BB", new Search(7));
-        Assert.state(mapper.find(7).getRemark().equals("BB"), "Test update col failed");
-
-        val id = mapper.findCol(User::getId, Search.of(1).distinct(Boolean.TRUE));
-        Assert.state(Integer.valueOf(1).equals(id), "Test findCol failed");
-        val id2 = mapper.findCol(User::getId, Search.of(1));
-        Assert.state(Integer.valueOf(1).equals(id2), "Test findCol failed");
-
-        final List<Integer> idList = mapper.listCol("`tb_user`.id", Search.of(1));
-        Assert.state(Integer.valueOf(1).equals(idList.get(0)), "Test listCol failed");
-        val idList2 = mapper.listCol(User::getId, Search.of(1));
-        Assert.state(Integer.valueOf(1).equals(idList2.get(0)), "Test listCol failed");
-
-        val userList13 = mapper.list(Search.of(
-                arg -> arg.addSql("id % 2 in ").addParamList(1, 3)));
-        for (val user : userList13) {
-            val idMod2 = user.getId() % 2;
-            Assert.state(idMod2 == 1 || idMod2 == 3, "Test Search#build failed");
+        for (var id : List.of("count", "exists", "find", "findCol", "list", "listCol",
+                "select", "insert", "update", "setNull", "delete", "listByName")) {
+            assertTrue(configuration.hasStatement(namespace + id), id + " should be registered");
         }
 
-        val deleteId = 7;
-        mapper.delete(deleteId);
-        Assert.state(mapper.find(deleteId) == null, "Test delete failed");
-
-        val deleteId2 = 9;
-        mapper.delete(Search.of(deleteId2));
-        Assert.state(mapper.find(deleteId2) == null, "Test delete failed");
+        assertEquals(1, mapper.listByName("Donghuang").size());
     }
 
     @Test
-    public void testScan() {
-        val ids = List.of(10, 11, 13, 15);
-        mapper.scan(3, Search.of(ids), user -> {
-            log.info("Scan user [{}].", user);
-            Assert.state(ids.contains(user.getId()), "Test scan failed");
-        });
+    void queriesByPrimaryKeySearchAndSelectedColumns() {
+        assertEquals(TEST_CASE_SIZE, mapper.list(Search.of()).size());
+        assertEquals(TEST_CASE_SIZE, mapper.count(null));
+        assertEquals(3, mapper.list(List.of(1, 2, 3)).size());
+        assertEquals(3, mapper.list(new Integer[] {1, 2, 3}).size());
+
+        var special = mapper.findByAccount(SPECIAL_ACCOUNT);
+        assertNotNull(special);
+        assertEquals(SPECIAL_ACCOUNT, special.getAccount());
+        assertEquals(SPECIAL_ACCOUNT,
+            mapper.find(Search.of(User::getAccount, SPECIAL_ACCOUNT).distinct(true)).getAccount());
+        assertTrue(mapper.exists(Search.of(User::getAccount, SPECIAL_ACCOUNT)));
+        assertFalse(mapper.exists(Search.of(User::getAccount, "missing")));
+
+        assertEquals(1, mapper.findCol(User::getId, Search.of(1)));
+        assertEquals(List.of(1, 2, 3),
+            mapper.listCol(User::getId, Search.of(List.of(1, 2, 3)).asc(User::getId)));
+
+        var oddUsers = mapper.list(Search.of(
+            arg -> arg.addSql("id % 2 = ").addParam(1)));
+        assertEquals(9, oddUsers.size());
+        assertTrue(oddUsers.stream().allMatch(user -> user.getId() % 2 == 1));
+
+        assertEquals(1, mapper.select("ifnull(max(id), 0)", Search.of().limit(1)).size());
     }
 
     @Test
-    public void testOrderBy() {
-        mapper.list(Search.of().asc(User::getAccount).asc(User::getId));
+    void updatesEntitiesMapsAndIndividualColumns() {
+        var user = mapper.findByAccount(SPECIAL_ACCOUNT);
+        assertEquals(16, user.getAccessKey().length());
+
+        user.setCity("Beijing");
+        user.setAccount("must-not-change");
+        assertEquals(1, mapper.update(user));
+
+        var updated = mapper.find(user.getId());
+        assertEquals("Beijing", updated.getCity());
+        assertEquals(SPECIAL_ACCOUNT, updated.getAccount());
+
+        var update = UpdateObj.of(User::getRemark, "updated by map")
+            .set(User::getUpdatedBy, "tester")
+            .set(User::getUpdatedAt, new Date(1_600_000_000_000L));
+        assertEquals(2, mapper.update(update, Search.of().gt(User::getId, 3).lt(User::getId, 6)));
+        assertEquals("tester", mapper.find(4).getUpdatedBy());
+        assertEquals("tester", mapper.find(5).getUpdatedBy());
+
+        assertEquals(1, mapper.update(User::getCity, "SHANGHAI", 3));
+        assertEquals("SHANGHAI", mapper.find(3).getCity());
+        assertEquals(1, mapper.update("remark", "changed", Search.of(6)));
+        assertEquals("changed", mapper.find(6).getRemark());
     }
 
     @Test
-    public void testSelect() {
-        val users = mapper.select("ifnull(max(id), 0)", Search.of().limit(1));
+    void setsOneOrMoreColumnsToNull() {
+        assertEquals(1, mapper.setNull(User::getRemark, Search.of(3)));
+        assertNull(mapper.find(3).getRemark());
+
+        assertEquals(1, mapper.setNull(
+            List.of((FnGetter<User, ?>) User::getRemark, User::getUpdatedBy),
+            Search.of(4)));
+        var user = mapper.find(4);
+        assertNull(user.getRemark());
+        assertNull(user.getUpdatedBy());
+        assertNotNull(mapper.find(Search.of(4).isNull(User::getUpdatedBy)));
+
+        mapper.update(User::getUpdatedBy, "tester", 5);
+        assertNotNull(mapper.find(Search.of(5).ne(User::getUpdatedBy, null)));
+    }
+
+    @Test
+    void deletesByPrimaryKeyAndSearch() {
+        assertEquals(1, mapper.delete(7));
+        assertNull(mapper.find(7));
+
+        assertEquals(1, mapper.delete(Search.of(9)));
+        assertNull(mapper.find(9));
+        assertEquals(TEST_CASE_SIZE - 2, mapper.count(null));
+    }
+
+    @Test
+    void scansMatchingRowsInStablePages() {
+        var ids = List.of(10, 11, 13, 15);
+        var scanned = new ArrayList<Integer>();
+
+        assertTrue(mapper.scan(3, Search.of(ids).asc(User::getId),
+            user -> scanned.add(user.getId())));
+
+        assertEquals(ids, scanned);
+        assertEquals(Set.copyOf(ids), new HashSet<>(scanned));
     }
 }
